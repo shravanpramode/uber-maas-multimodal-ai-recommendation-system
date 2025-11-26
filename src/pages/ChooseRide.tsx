@@ -1,10 +1,10 @@
-import { ArrowLeft, Users, MapPin, Calendar } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Calendar, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { useState } from "react";
 import MultimodalIcon from "@/components/MultimodalIcon";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { getRideIcon } from "@/components/RideIcons";
 
 const ChooseRide = () => {
@@ -230,9 +230,10 @@ const ChooseRide = () => {
       selectRoute(multimodalRoute);
       navigate("/trip-search");
     } else {
-      toast("Out of scope", {
-        className: "backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg",
-        description: "This ride option is currently not available",
+      toast({
+        title: "Out of scope",
+        description: "This feature is not available in this prototype",
+        className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
       });
     }
   };
@@ -244,8 +245,8 @@ const ChooseRide = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col font-uber overflow-hidden">
-      {/* Map Area - 10% */}
-      <div className="relative h-[10vh] bg-secondary flex-shrink-0">
+      {/* Map Area - 12% with pickup inside */}
+      <div className="relative h-[12vh] bg-secondary flex-shrink-0">
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
           <Button
             variant="secondary"
@@ -270,17 +271,22 @@ const ChooseRide = () => {
           🗺️
         </div>
 
-        {/* Pickup and Destination Labels */}
-        <div className="absolute top-20 left-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
+        {/* Pickup Label - Inside Map at bottom */}
+        <div className="absolute bottom-2 left-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
           {tripState.pickup?.name || "Connaught Place"}
-        </div>
-        <div className="absolute bottom-20 right-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
-          {tripState.destination?.name || "DLF Cyber Park"}
         </div>
       </div>
 
       {/* Ride Options Section - 70% scrollable */}
       <div className="flex-1 overflow-y-auto bg-card px-4 py-4">
+        {/* Destination - shown at top since pickup is now in map */}
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
+          <div className="w-2 h-2 rounded-full bg-foreground" />
+          <p className="text-sm font-semibold">
+            {tripState.destination?.name || "DLF Cyber Park"}
+          </p>
+        </div>
+
         <h2 className="text-xl font-bold mb-4">Choose a ride</h2>
 
             {/* Multimodal - Best Value */}
@@ -301,23 +307,21 @@ const ChooseRide = () => {
                 <div className="flex items-center gap-3">
                   <MultimodalIcon className="w-12 h-12 text-black" />
                   <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-bold text-base">Multimodal</h3>
-                      <div className="bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded">
+                      <div className="bg-success/10 text-success text-[10px] font-bold px-2 py-0.5 rounded-full">
                         BEST VALUE
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">
-                      Auto + Metro + Auto · {multimodalRoute.totalDuration} min
+                      03:28 · {multimodalRoute.totalDuration} min total
                     </p>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-success font-semibold">
-                        Save ₹{multimodalRoute.savings}
-                      </span>
-                      <span className="text-muted-foreground">
-                        • {multimodalRoute.carbonSaved}kg CO₂ saved
-                      </span>
-                    </div>
+                    <p className="text-xs text-muted-foreground mb-1.5">
+                      Save ₹{multimodalRoute.savings} · {multimodalRoute.carbonSaved}kg CO₂ saved
+                    </p>
+                    <p className="text-xs text-muted-foreground italic">
+                      Combine Uber rides with public transit
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold">₹{multimodalRoute.totalPrice}</p>
@@ -531,7 +535,17 @@ const ChooseRide = () => {
       {/* Fixed Bottom Bar - Payment & Choose Button */}
       <div className="flex-shrink-0 bg-card border-t border-border p-4 space-y-3">
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-12 justify-start">
+          <Button
+            variant="outline"
+            className="flex-1 h-12 justify-start"
+            onClick={() => {
+              toast({
+                title: "Out of scope",
+                description: "This feature is not available in this prototype",
+                className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+              });
+            }}
+          >
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
                 1
@@ -542,7 +556,18 @@ const ChooseRide = () => {
               </div>
             </div>
           </Button>
-          <Button variant="outline" size="icon" className="h-12 w-12 border-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 border-2"
+            onClick={() => {
+              toast({
+                title: "Out of scope",
+                description: "This feature is not available in this prototype",
+                className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+              });
+            }}
+          >
             <Calendar className="w-5 h-5" />
           </Button>
         </div>

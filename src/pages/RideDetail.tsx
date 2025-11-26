@@ -1,8 +1,9 @@
-import { ArrowLeft, Users, Info, Calendar } from "lucide-react";
+import { ArrowLeft, Users, Info, Calendar, ChevronRight } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { getRideIcon } from "@/components/RideIcons";
+import { toast } from "@/hooks/use-toast";
 
 const RideDetail = () => {
   const navigate = useNavigate();
@@ -174,8 +175,11 @@ const RideDetail = () => {
   }
 
   const handleConfirm = () => {
-    startTrip();
-    navigate("/trip-search");
+    toast({
+      title: "Out of scope",
+      description: "This feature is not available in this prototype",
+      className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+    });
   };
 
   return (
@@ -248,8 +252,19 @@ const RideDetail = () => {
             <p className="text-[10px] text-muted-foreground mb-0.5">Personal</p>
             <p className="text-xs font-semibold">Cash</p>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ArrowLeft className="w-3 h-3 rotate-180" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              toast({
+                title: "Out of scope",
+                description: "This feature is not available in this prototype",
+                className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+              });
+            }}
+          >
+            <ChevronRight className="w-3 h-3" />
           </Button>
         </div>
 
@@ -265,6 +280,13 @@ const RideDetail = () => {
             variant="outline"
             size="icon"
             className="h-11 w-11 border-2"
+            onClick={() => {
+              toast({
+                title: "Out of scope",
+                description: "This feature is not available in this prototype",
+                className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+              });
+            }}
           >
             <Calendar className="w-4 h-4" />
           </Button>
