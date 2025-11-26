@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Star, Home, Receipt, HelpCircle } from "lucide-react";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTrip } from "@/contexts/TripContext";
@@ -11,6 +11,15 @@ const TripComplete = () => {
   const [rating, setRating] = useState(0);
 
   const handlePayment = () => {
+    navigate('/payment', { 
+      state: { 
+        totalCost: tripState.selectedRoute?.totalPrice || 95,
+        tripId: tripState.tripId 
+      } 
+    });
+  };
+
+  const handleResetTrip = () => {
     completeTrip();
     navigate("/");
   };
@@ -113,24 +122,9 @@ const TripComplete = () => {
             Pay ₹{tripState.selectedRoute?.totalPrice}
           </Button>
           
-          <div className="grid grid-cols-3 gap-3">
-            <Button variant="outline" className="flex-col h-auto py-4 gap-2">
-              <Receipt className="w-5 h-5" />
-              <span className="text-xs">Receipt</span>
-            </Button>
-            <Button variant="outline" className="flex-col h-auto py-4 gap-2">
-              <HelpCircle className="w-5 h-5" />
-              <span className="text-xs">Help</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-col h-auto py-4 gap-2"
-              onClick={() => navigate("/")}
-            >
-              <Home className="w-5 h-5" />
-              <span className="text-xs">Home</span>
-            </Button>
-          </div>
+          <Button onClick={handleResetTrip} variant="outline" className="w-full">
+            Back to Home
+          </Button>
         </div>
 
         {/* Eco Impact */}

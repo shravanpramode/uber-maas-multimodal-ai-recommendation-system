@@ -10,7 +10,7 @@ const MultimodalDetail = () => {
 
   const handleConfirm = () => {
     startTrip();
-    navigate("/trip-search");
+    navigate("/route-confirmation");
   };
 
   const route = tripState.selectedRoute;
