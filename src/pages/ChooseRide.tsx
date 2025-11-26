@@ -74,28 +74,28 @@ const ChooseRide = () => {
     carbonSaved: 2.3,
   };
 
-  const handleRideSelect = (rideId: string) => {
-    setSelectedRide(rideId);
+  const handleMultimodalClick = () => {
+    console.log('🚀 Multimodal clicked!');
+    setSelectedRide("multimodal");
+    selectRoute(multimodalRoute);
+    navigate("/multimodal-detail");
   };
 
-  const handleConfirm = () => {
-    if (selectedRide === "multimodal") {
-      selectRoute(multimodalRoute);
-      navigate("/multimodal-detail");
-    } else {
-      const ride = rides.find(r => r.id === selectedRide);
-      if (ride) {
-        selectRoute({
-          id: ride.id,
-          totalPrice: ride.price,
-          totalDuration: parseInt(ride.time.split("·")[1]),
-          legs: [
-            { mode: "uber", from: "Pickup", to: "Destination", duration: parseInt(ride.time.split("·")[1]), price: ride.price }
-          ],
-        });
-        startTrip();
-        navigate("/trip-search");
-      }
+  const handleRideClick = (rideId: string) => {
+    console.log('🚗 Ride clicked:', rideId);
+    const ride = rides.find(r => r.id === rideId);
+    if (ride) {
+      setSelectedRide(rideId);
+      selectRoute({
+        id: ride.id,
+        totalPrice: ride.price,
+        totalDuration: parseInt(ride.time.split("·")[1]),
+        legs: [
+          { mode: "uber", from: "Pickup", to: "Destination", duration: parseInt(ride.time.split("·")[1]), price: ride.price }
+        ],
+      });
+      startTrip();
+      navigate("/trip-search");
     }
   };
 
@@ -131,11 +131,12 @@ const ChooseRide = () => {
               <h3 className="font-bold text-lg">Rides we think you'll like</h3>
             </div>
             
-            <Card
-              className={`p-4 cursor-pointer transition-all border-2 ${
+            <button
+              onClick={handleMultimodalClick}
+              type="button"
+              className={`w-full p-4 cursor-pointer transition-all border-2 rounded-xl text-left ${
                 selectedRide === "multimodal" ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"
               }`}
-              onClick={() => handleRideSelect("multimodal")}
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl">🚇</div>
@@ -156,18 +157,19 @@ const ChooseRide = () => {
                   <p className="text-2xl font-bold">₹{multimodalRoute.totalPrice}</p>
                 </div>
               </div>
-            </Card>
+            </button>
           </div>
 
           {/* Standard Rides */}
           <div className="space-y-3">
             {rides.map((ride) => (
-              <Card
+              <button
                 key={ride.id}
-                className={`p-4 cursor-pointer transition-all border-2 ${
+                onClick={() => handleRideClick(ride.id)}
+                type="button"
+                className={`w-full p-4 cursor-pointer transition-all border-2 rounded-xl text-left ${
                   selectedRide === ride.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                 }`}
-                onClick={() => handleRideSelect(ride.id)}
               >
                 <div className="flex items-center gap-4">
                   <div className="text-4xl">{ride.image}</div>
@@ -184,7 +186,7 @@ const ChooseRide = () => {
                     <p className="text-xl font-bold">₹{ride.price}</p>
                   </div>
                 </div>
-              </Card>
+              </button>
             ))}
           </div>
         </div>
@@ -192,20 +194,15 @@ const ChooseRide = () => {
 
       {/* Bottom Action */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" className="flex-1 justify-start h-14">
-            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-3">
-              <span className="text-sm font-semibold">1</span>
-            </div>
-            <div className="text-left">
-              <p className="text-xs text-muted-foreground">Personal</p>
-              <p className="text-sm font-semibold">UPI Scan and Pay</p>
-            </div>
-          </Button>
-          <Button onClick={handleConfirm} className="h-14 px-8 text-base font-bold">
-            Choose {selectedRide === "go-sedan" ? "Go Sedan" : selectedRide === "multimodal" ? "Multimodal" : "ride"}
-          </Button>
-        </div>
+        <Button variant="outline" className="justify-start h-14 w-full">
+          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-3">
+            <span className="text-sm font-semibold">1</span>
+          </div>
+          <div className="text-left">
+            <p className="text-xs text-muted-foreground">Personal</p>
+            <p className="text-sm font-semibold">UPI Scan and Pay</p>
+          </div>
+        </Button>
       </div>
     </div>
   );
