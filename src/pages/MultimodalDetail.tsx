@@ -1,8 +1,9 @@
-import { ArrowLeft, Clock, Leaf, MapPin, Train, Car } from "lucide-react";
+import { ArrowLeft, Calendar, Wallet, Leaf } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTrip } from "@/contexts/TripContext";
+import MultimodalIcon from "@/components/MultimodalIcon";
 
 const MultimodalDetail = () => {
   const navigate = useNavigate();
@@ -21,139 +22,156 @@ const MultimodalDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card px-4 py-6 border-b border-border">
-        <div className="flex items-center gap-4 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/choose-ride")}>
-            <ArrowLeft className="w-6 h-6" />
+    <div className="min-h-screen bg-background flex flex-col font-uber">
+      {/* Map Area */}
+      <div className="relative h-[55vh] bg-secondary">
+        <div className="absolute top-4 left-4 z-10">
+          <Button
+            variant="secondary"
+            size="icon"
+            className="rounded-full shadow-lg bg-white hover:bg-white/90"
+            onClick={() => navigate("/choose-ride")}
+          >
+            <ArrowLeft className="w-5 h-5 text-black" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Multimodal Journey</h1>
-            <p className="text-sm text-muted-foreground">Best value for your trip</p>
-          </div>
         </div>
-      </header>
 
-      {/* Trip Overview */}
-      <div className="px-4 py-6">
-        <Card className="p-6 bg-gradient-to-br from-accent/10 to-accent/5 border-accent">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-accent" />
-              <span className="text-xl font-bold">{route.totalDuration} min</span>
+        {/* Map placeholder */}
+        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
+          🗺️
+        </div>
+
+        {/* Pickup and Destination Labels */}
+        <div className="absolute top-20 left-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
+          {tripState.pickup?.name || "Connaught Place"}
+        </div>
+        <div className="absolute bottom-20 right-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
+          {tripState.destination?.name || "DLF Cyber Park"}
+        </div>
+      </div>
+
+      {/* Details Card */}
+      <div className="flex-1 bg-card rounded-t-3xl -mt-8 relative z-10 shadow-2xl">
+        <div className="px-4 py-6">
+          <div className="w-12 h-1 bg-border rounded-full mx-auto mb-6" />
+
+          <h2 className="text-xl font-bold mb-6">Confirm details</h2>
+
+          {/* Multimodal Icon */}
+          <div className="flex justify-center mb-6">
+            <MultimodalIcon className="w-24 h-24 text-black" />
+          </div>
+
+          {/* Route Info */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-bold">Multimodal Journey</h3>
+              <p className="text-xl font-bold">₹{route.totalPrice}</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold">₹{route.totalPrice}</p>
-              {route.savings && (
-                <p className="text-sm text-success font-semibold">Save ₹{route.savings}</p>
-              )}
+            <p className="text-sm text-muted-foreground mb-3">
+              Auto + Metro + Auto · {route.totalDuration} min
+            </p>
+
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-1 text-sm">
+                <Wallet className="w-4 h-4 text-success" />
+                <span className="text-success font-semibold">
+                  Save ₹{route.savings}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Leaf className="w-4 h-4" />
+                <span>{route.carbonSaved}kg CO₂ saved</span>
+              </div>
             </div>
           </div>
-          
-          {route.carbonSaved && (
-            <div className="flex items-center gap-2 bg-success/10 px-3 py-2 rounded-lg">
-              <Leaf className="w-4 h-4 text-success" />
-              <span className="text-sm font-medium text-success">
-                Reduce {route.carbonSaved}kg CO₂ emissions
-              </span>
-            </div>
-          )}
-        </Card>
 
-        {/* Journey Legs */}
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Your journey</h2>
-          
-          <div className="space-y-4">
-            {route.legs.map((leg, index) => (
-              <div key={index} className="relative">
-                {index > 0 && (
-                  <div className="absolute left-8 -top-4 w-0.5 h-4 bg-border" />
-                )}
-                
-                <Card className="p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                      {leg.mode === "uber" && <Car className="w-8 h-8" />}
-                      {leg.mode === "metro" && <Train className="w-8 h-8" />}
-                      {leg.mode === "walk" && <span className="text-2xl">🚶</span>}
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold capitalize">{leg.mode}</h3>
-                        <span className="text-sm font-semibold">₹{leg.price}</span>
+          {/* Journey Legs */}
+          <div className="mb-6 pb-6 border-b border-border">
+            <h3 className="text-sm font-bold mb-3">Your journey</h3>
+            <div className="space-y-3">
+              {route.legs?.map((leg, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-lg">
+                    {leg.mode === "uber" ? "🚗" : leg.mode === "metro" ? "🚇" : "🚌"}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold capitalize">{leg.mode}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {leg.from} → {leg.to}
+                        </p>
                       </div>
-                      
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{leg.from} → {leg.to}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        <span>{leg.duration} min</span>
-                        {leg.prebooked && (
-                          <span className="bg-accent/20 text-accent px-2 py-0.5 rounded text-xs font-semibold ml-2">
-                            Pre-booked
-                          </span>
-                        )}
+                      <div className="text-right">
+                        <p className="text-sm font-bold">₹{leg.price}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {leg.duration} min
+                        </p>
                       </div>
                     </div>
                   </div>
-                </Card>
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Why Multimodal */}
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Why choose multimodal?</h2>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="p-4 text-center">
-              <div className="text-3xl mb-2">💰</div>
-              <p className="font-semibold mb-1">Save Money</p>
-              <p className="text-sm text-muted-foreground">₹{route.savings} cheaper</p>
-            </Card>
-            
-            <Card className="p-4 text-center">
-              <div className="text-3xl mb-2">🌱</div>
-              <p className="font-semibold mb-1">Eco-Friendly</p>
-              <p className="text-sm text-muted-foreground">{route.carbonSaved}kg CO₂ less</p>
-            </Card>
-            
-            <Card className="p-4 text-center">
-              <div className="text-3xl mb-2">⚡</div>
-              <p className="font-semibold mb-1">Beat Traffic</p>
-              <p className="text-sm text-muted-foreground">Avoid congestion</p>
-            </Card>
-            
-            <Card className="p-4 text-center">
-              <div className="text-3xl mb-2">🎯</div>
-              <p className="font-semibold mb-1">AI Optimized</p>
-              <p className="text-sm text-muted-foreground">Best route for you</p>
-            </Card>
+          {/* Why Multimodal */}
+          <Card className="mb-6 p-4 bg-accent/5 border-accent/20">
+            <h3 className="text-sm font-bold mb-2">Why choose multimodal?</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-success mt-0.5">✓</span>
+                <span>Save up to ₹{route.savings} compared to regular rides</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-success mt-0.5">✓</span>
+                <span>Reduce carbon footprint by {route.carbonSaved}kg CO₂</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-success mt-0.5">✓</span>
+                <span>Avoid traffic with metro during peak hours</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-success mt-0.5">✓</span>
+                <span>Seamless transitions between transport modes</span>
+              </li>
+            </ul>
+          </Card>
+
+          {/* Payment Method */}
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-border">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Personal</p>
+              <p className="text-sm font-semibold">Cash</p>
+            </div>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-4 h-4 rotate-180" />
+            </Button>
           </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              onClick={handleConfirm}
+              className="flex-1 h-12 bg-black text-white hover:bg-black/90 font-semibold text-base"
+            >
+              Choose Multimodal
+            </Button>
+            <Button variant="outline" size="icon" className="h-12 w-12 border-2">
+              <Calendar className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Alternative Options */}
+          <Button
+            variant="link"
+            className="w-full mt-4 text-sm"
+            onClick={() => navigate("/choose-ride")}
+          >
+            View alternative options
+          </Button>
         </div>
-
-        {/* See Other Options */}
-        <Button
-          variant="outline"
-          className="w-full mt-6 h-12 font-semibold"
-          onClick={() => navigate("/route-options")}
-        >
-          See all route options
-        </Button>
-      </div>
-
-      {/* Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4">
-        <Button onClick={handleConfirm} className="w-full h-14 text-lg font-bold">
-          Confirm Multimodal Journey
-        </Button>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { TripProvider } from "./contexts/TripContext";
 import Home from "./pages/Home";
 import LocationSearch from "./pages/LocationSearch";
 import ChooseRide from "./pages/ChooseRide";
+import RideDetail from "./pages/RideDetail";
 import MultimodalDetail from "./pages/MultimodalDetail";
 import RouteConfirmation from "./pages/RouteConfirmation";
 import TripSearch from "./pages/TripSearch";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/location-search" element={<LocationSearch />} />
             <Route path="/choose-ride" element={<ChooseRide />} />
+            <Route path="/ride-detail" element={<RideDetail />} />
             <Route path="/multimodal-detail" element={<MultimodalDetail />} />
             <Route path="/route-confirmation" element={<RouteConfirmation />} />
             <Route path="/tracking-leg1" element={<TrackingLeg1 />} />
