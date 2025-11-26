@@ -9,11 +9,14 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import MultimodalIcon from "@/components/MultimodalIcon";
+import { toast } from "sonner";
+import { getRideIcon } from "@/components/RideIcons";
 
 const ChooseRide = () => {
   const navigate = useNavigate();
   const { selectRoute, tripState } = useTrip();
-  const [selectedRide, setSelectedRide] = useState("go-sedan");
+  const [selectedRide, setSelectedRide] = useState<string | null>(null);
+  const [selectedRideName, setSelectedRideName] = useState<string | null>(null);
   const [snapPoint, setSnapPoint] = useState<number | string | null>(0.6);
 
   const rides = [
@@ -190,7 +193,7 @@ const ChooseRide = () => {
 
   const multimodalRoute = {
     id: "multimodal-1",
-    name: "Multimodal Journey",
+    name: "Multimodal",
     totalPrice: 156.45,
     totalDuration: 42,
     legs: [
@@ -204,14 +207,40 @@ const ChooseRide = () => {
   };
 
   const handleMultimodalClick = () => {
-    setSelectedRide("multimodal");
-    selectRoute(multimodalRoute);
-    navigate("/multimodal-detail");
+    if (selectedRide === "multimodal") {
+      // Second click - navigate to details
+      selectRoute(multimodalRoute);
+      navigate("/multimodal-detail");
+    } else {
+      // First click - just select
+      setSelectedRide("multimodal");
+      setSelectedRideName("Multimodal");
+    }
   };
 
-  const handleRideClick = (rideId: string) => {
-    setSelectedRide(rideId);
-    navigate(`/ride-detail?id=${rideId}`);
+  const handleRideClick = (rideId: string, rideName: string) => {
+    if (selectedRide === rideId) {
+      // Second click - navigate to details
+      navigate(`/ride-detail?id=${rideId}`);
+    } else {
+      // First click - just select
+      setSelectedRide(rideId);
+      setSelectedRideName(rideName);
+    }
+  };
+
+  const handleChooseClick = () => {
+    if (!selectedRide) return;
+    
+    if (selectedRide === "multimodal") {
+      selectRoute(multimodalRoute);
+      navigate("/trip-search");
+    } else {
+      toast("Out of scope", {
+        className: "backdrop-blur-xl bg-white/30 border border-white/40 shadow-lg",
+        description: "This ride option is currently not available",
+      });
+    }
   };
 
   const recommendedRides = rides.filter((r) => r.category === "recommended");
@@ -289,8 +318,8 @@ const ChooseRide = () => {
                 <div className="flex items-center gap-3">
                   <MultimodalIcon className="w-12 h-12 text-black" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-base">Multimodal Journey</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-base">Multimodal</h3>
                       <div className="bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded">
                         BEST VALUE
                       </div>
@@ -318,7 +347,7 @@ const ChooseRide = () => {
                 {recommendedRides.map((ride) => (
                   <button
                     key={ride.id}
-                    onClick={() => handleRideClick(ride.id)}
+                    onClick={() => handleRideClick(ride.id, ride.name)}
                     type="button"
                     className={`w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left ${
                       selectedRide === ride.id
@@ -327,7 +356,10 @@ const ChooseRide = () => {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-3xl">{ride.image}</div>
+                      {(() => {
+                        const Icon = getRideIcon(ride.id);
+                        return <Icon className="w-12 h-12 flex-shrink-0" />;
+                      })()}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <h3 className="font-bold text-base">{ride.name}</h3>
@@ -371,12 +403,19 @@ const ChooseRide = () => {
                   {economyRides.map((ride) => (
                     <button
                       key={ride.id}
-                      onClick={() => handleRideClick(ride.id)}
+                      onClick={() => handleRideClick(ride.id, ride.name)}
                       type="button"
-                      className="w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left border-border hover:border-black/50"
+                      className={`w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left ${
+                        selectedRide === ride.id
+                          ? "border-black bg-black/5"
+                          : "border-border hover:border-black/50"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="text-3xl">{ride.image}</div>
+                        {(() => {
+                          const Icon = getRideIcon(ride.id);
+                          return <Icon className="w-12 h-12 flex-shrink-0" />;
+                        })()}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <h3 className="font-bold text-base">{ride.name}</h3>
@@ -416,12 +455,19 @@ const ChooseRide = () => {
                   {rentalRides.map((ride) => (
                     <button
                       key={ride.id}
-                      onClick={() => handleRideClick(ride.id)}
+                      onClick={() => handleRideClick(ride.id, ride.name)}
                       type="button"
-                      className="w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left border-border hover:border-black/50"
+                      className={`w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left ${
+                        selectedRide === ride.id
+                          ? "border-black bg-black/5"
+                          : "border-border hover:border-black/50"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="text-3xl">{ride.image}</div>
+                        {(() => {
+                          const Icon = getRideIcon(ride.id);
+                          return <Icon className="w-12 h-12 flex-shrink-0" />;
+                        })()}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-base mb-0.5">{ride.name}</h3>
                           <p className="text-xs text-muted-foreground mb-0.5">
@@ -451,12 +497,19 @@ const ChooseRide = () => {
                   {otherRides.map((ride) => (
                     <button
                       key={ride.id}
-                      onClick={() => handleRideClick(ride.id)}
+                      onClick={() => handleRideClick(ride.id, ride.name)}
                       type="button"
-                      className="w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left border-border hover:border-black/50"
+                      className={`w-full p-3 cursor-pointer transition-all border-2 rounded-xl text-left ${
+                        selectedRide === ride.id
+                          ? "border-black bg-black/5"
+                          : "border-border hover:border-black/50"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="text-3xl">{ride.image}</div>
+                        {(() => {
+                          const Icon = getRideIcon(ride.id);
+                          return <Icon className="w-12 h-12 flex-shrink-0" />;
+                        })()}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <h3 className="font-bold text-base">{ride.name}</h3>
@@ -493,7 +546,7 @@ const ChooseRide = () => {
           </div>
 
           {/* Fixed Bottom Bar */}
-          <div className="sticky bottom-0 bg-card border-t border-border p-4">
+          <div className="sticky bottom-0 bg-card border-t border-border p-4 space-y-3">
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1 h-12 justify-start">
                 <div className="flex items-center gap-2">
@@ -510,6 +563,13 @@ const ChooseRide = () => {
                 <Calendar className="w-5 h-5" />
               </Button>
             </div>
+            <Button
+              onClick={handleChooseClick}
+              disabled={!selectedRide}
+              className="w-full h-12 bg-black text-white hover:bg-black/90 font-semibold text-base disabled:opacity-50"
+            >
+              {selectedRideName ? `Choose ${selectedRideName}` : "Choose a ride"}
+            </Button>
           </div>
         </DrawerContent>
       </Drawer>
