@@ -3,11 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { useState } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import MultimodalIcon from "@/components/MultimodalIcon";
 import { toast } from "sonner";
 import { getRideIcon } from "@/components/RideIcons";
@@ -17,7 +12,6 @@ const ChooseRide = () => {
   const { selectRoute, tripState } = useTrip();
   const [selectedRide, setSelectedRide] = useState<string | null>(null);
   const [selectedRideName, setSelectedRideName] = useState<string | null>(null);
-  const [snapPoint, setSnapPoint] = useState<number | string | null>(0.6);
 
   const rides = [
     {
@@ -249,9 +243,9 @@ const ChooseRide = () => {
   const otherRides = rides.filter((r) => r.category === "other");
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-uber">
-      {/* Map Area */}
-      <div className="relative h-[50vh] bg-secondary">
+    <div className="h-screen bg-background flex flex-col font-uber overflow-hidden">
+      {/* Map Area - 10% */}
+      <div className="relative h-[10vh] bg-secondary flex-shrink-0">
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
           <Button
             variant="secondary"
@@ -285,20 +279,9 @@ const ChooseRide = () => {
         </div>
       </div>
 
-      {/* Bottom Sheet with Ride Options */}
-      <Drawer
-        open={true}
-        modal={false}
-        snapPoints={[0.9, 0.6, 0.1]}
-        activeSnapPoint={snapPoint}
-        setActiveSnapPoint={setSnapPoint}
-        dismissible={false}
-      >
-        <DrawerContent className="fixed bottom-0 left-0 right-0 max-h-[90vh] rounded-t-3xl shadow-2xl">
-          <div className="px-4 py-4 overflow-y-auto max-h-[85vh]">
-            <div className="w-12 h-1 bg-border rounded-full mx-auto mb-4" />
-
-            <h2 className="text-xl font-bold mb-4">Choose a ride</h2>
+      {/* Ride Options Section - 70% scrollable */}
+      <div className="flex-1 overflow-y-auto bg-card px-4 py-4">
+        <h2 className="text-xl font-bold mb-4">Choose a ride</h2>
 
             {/* Multimodal - Best Value */}
             <div className="mb-4">
@@ -545,34 +528,32 @@ const ChooseRide = () => {
             )}
           </div>
 
-          {/* Fixed Bottom Bar */}
-          <div className="sticky bottom-0 bg-card border-t border-border p-4 space-y-3">
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 h-12 justify-start">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
-                    1
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] text-muted-foreground">Personal</p>
-                    <p className="text-xs font-semibold">Cash</p>
-                  </div>
-                </div>
-              </Button>
-              <Button variant="outline" size="icon" className="h-12 w-12 border-2">
-                <Calendar className="w-5 h-5" />
-              </Button>
+      {/* Fixed Bottom Bar - Payment & Choose Button */}
+      <div className="flex-shrink-0 bg-card border-t border-border p-4 space-y-3">
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1 h-12 justify-start">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
+                1
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] text-muted-foreground">Personal</p>
+                <p className="text-xs font-semibold">Cash</p>
+              </div>
             </div>
-            <Button
-              onClick={handleChooseClick}
-              disabled={!selectedRide}
-              className="w-full h-12 bg-black text-white hover:bg-black/90 font-semibold text-base disabled:opacity-50"
-            >
-              {selectedRideName ? `Choose ${selectedRideName}` : "Choose a ride"}
-            </Button>
-          </div>
-        </DrawerContent>
-      </Drawer>
+          </Button>
+          <Button variant="outline" size="icon" className="h-12 w-12 border-2">
+            <Calendar className="w-5 h-5" />
+          </Button>
+        </div>
+        <Button
+          onClick={handleChooseClick}
+          disabled={!selectedRide}
+          className="w-full h-12 bg-black text-white hover:bg-black/90 font-semibold text-base disabled:opacity-50"
+        >
+          {selectedRideName ? `Choose ${selectedRideName}` : "Choose a ride"}
+        </Button>
+      </div>
     </div>
   );
 };
