@@ -76,30 +76,29 @@ const Home = () => {
 
       {/* Suggestions Section */}
       <div className="px-4 pb-2">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-bold">Suggestions</h2>
-          <Button variant="ghost" className="text-accent hover:text-accent text-sm h-auto py-1">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xl font-bold">Suggestions</h2>
+          <Button variant="ghost" className="text-foreground/60 hover:text-foreground text-sm h-auto py-1 px-2">
             See all
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-4 gap-3">
           {services.map((service, idx) => {
           const Icon = service.icon;
-          return <Card key={idx} className="relative p-2 hover:shadow-lg transition-all cursor-pointer border hover:border-accent" onClick={() => navigate("/location-search")}>
-                {service.discount && <div className="absolute top-1 left-1 bg-success text-success-foreground text-[10px] font-bold px-1 py-0.5 rounded">
-                    ⚡{service.discount}
+          return <button key={idx} className="relative bg-card rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer border border-border/50 hover:border-border flex flex-col items-center gap-2 group" onClick={() => navigate("/location-search")}>
+                {service.discount && <div className="absolute top-2 left-2 bg-success text-success-foreground text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                    <span className="text-[8px]">✓</span>
+                    <span>{service.discount}</span>
                   </div>}
-                {service.promo && <div className="absolute top-1 left-1 bg-accent text-accent-foreground text-[10px] font-bold px-1 py-0.5 rounded">
+                {service.promo && <div className="absolute top-2 left-2 bg-accent text-accent-foreground text-[10px] font-bold px-2 py-1 rounded-md">
                     Promo
                   </div>}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="bg-secondary rounded-lg p-2">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <p className="text-[11px] font-semibold text-center">{service.label}</p>
+                <div className="bg-secondary/50 rounded-xl p-3 group-hover:bg-secondary/70 transition-colors">
+                  <Icon className="w-7 h-7 text-foreground" />
                 </div>
-              </Card>;
+                <p className="text-xs font-semibold text-center text-foreground">{service.label}</p>
+              </button>;
         })}
         </div>
       </div>
