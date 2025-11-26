@@ -2,13 +2,26 @@ import { Search, Calendar, Car, Bike, Package, Train, MapPin, Home as HomeIcon, 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
+
 const Home = () => {
   const navigate = useNavigate();
+  const [showOutOfScope, setShowOutOfScope] = useState(false);
+  const handleOutOfScope = () => {
+    toast({
+      description: "Out of scope",
+      className: "backdrop-blur-xl bg-white/80 dark:bg-black/80 border-white/20 shadow-xl",
+      duration: 2000,
+    });
+  };
+
   const services = [{
     icon: Car,
     label: "Trip",
     discount: "25%",
-    color: "success"
+    color: "success",
+    navigate: true
   }, {
     icon: Car,
     label: "Rentals",
@@ -38,19 +51,10 @@ const Home = () => {
     label: "Intercity",
     discount: null
   }];
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background font-uber">
       {/* Header */}
-      <header className="bg-card px-4 py-2 border-b border-border">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="flex items-center gap-2 bg-secondary px-3 py-1.5 rounded-full">
-            <Car className="w-4 h-4" />
-            <span className="font-semibold text-sm">Uber</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border">
-            <Package className="w-4 h-4 text-warning" />
-            <span className="font-semibold text-sm">Courier</span>
-          </div>
-        </div>
+      <header className="bg-card px-4 py-3 border-b border-border">
+        <h1 className="text-3xl font-bold tracking-tight mb-3">uber</h1>
 
         {/* Search Bar */}
         <Button onClick={() => navigate("/location-search")} variant="outline" className="w-full justify-start gap-2 h-10 text-base bg-card hover:bg-secondary border-2">
@@ -63,7 +67,10 @@ const Home = () => {
 
       {/* Recent Location */}
       <div className="px-4 py-2">
-        <Card className="p-2 flex items-center gap-3 hover:bg-secondary transition-colors cursor-pointer">
+        <Card 
+          className="p-2 flex items-center gap-3 hover:bg-secondary transition-colors cursor-pointer"
+          onClick={() => navigate("/location-search")}
+        >
           <div className="bg-secondary rounded-lg p-2">
             <MapPin className="w-4 h-4 bg-black/0 text-black opacity-100" />
           </div>
@@ -86,7 +93,11 @@ const Home = () => {
         <div className="grid grid-cols-4 gap-3">
           {services.map((service, idx) => {
           const Icon = service.icon;
-          return <button key={idx} className="relative bg-card rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer border border-border/50 hover:border-border flex flex-col items-center gap-2 group" onClick={() => navigate("/location-search")}>
+          return <button 
+            key={idx} 
+            className="relative bg-card rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer border border-border/50 hover:border-border flex flex-col items-center gap-2 group" 
+            onClick={() => service.navigate ? navigate("/location-search") : handleOutOfScope()}
+          >
                 {service.discount && <div className="absolute top-2 left-2 bg-success text-success-foreground text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1">
                     <span className="text-[8px]">✓</span>
                     <span>{service.discount}</span>
