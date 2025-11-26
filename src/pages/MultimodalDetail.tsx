@@ -1,9 +1,10 @@
-import { ArrowLeft, Calendar, Wallet, Leaf } from "lucide-react";
+import { ArrowLeft, Calendar, Wallet, Leaf, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTrip } from "@/contexts/TripContext";
 import MultimodalIcon from "@/components/MultimodalIcon";
+import { toast } from "@/hooks/use-toast";
 
 const MultimodalDetail = () => {
   const navigate = useNavigate();
@@ -145,8 +146,18 @@ const MultimodalDetail = () => {
               <p className="text-xs text-muted-foreground mb-1">Personal</p>
               <p className="text-sm font-semibold">Cash</p>
             </div>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4 rotate-180" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                toast({
+                  title: "Out of scope",
+                  description: "This feature is not available in this prototype",
+                  className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+                });
+              }}
+            >
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
 
@@ -158,7 +169,18 @@ const MultimodalDetail = () => {
             >
               Choose Multimodal
             </Button>
-            <Button variant="outline" size="icon" className="h-12 w-12 border-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-12 w-12 border-2"
+              onClick={() => {
+                toast({
+                  title: "Out of scope",
+                  description: "This feature is not available in this prototype",
+                  className: "backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl text-black",
+                });
+              }}
+            >
               <Calendar className="w-5 h-5" />
             </Button>
           </div>
