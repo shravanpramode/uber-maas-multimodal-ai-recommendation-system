@@ -8,13 +8,15 @@ interface Location {
 }
 
 interface RouteLeg {
-  mode: 'uber' | 'metro' | 'walk' | 'bus';
+  mode: 'auto' | 'bike' | 'uber-go' | 'go-sedan' | 'uber-xl' | 'metro' | 'bus' | 'suburban-train' | 'walk';
   from: string;
   to: string;
   duration: number;
   price?: number;
   distance?: number;
   prebooked?: boolean;
+  lineInfo?: string;
+  vehicleNumber?: string;
 }
 
 interface Route {
@@ -25,6 +27,9 @@ interface Route {
   savings?: number;
   isRecommended?: boolean;
   carbonSaved?: number;
+  tag?: string;
+  distance?: number;
+  eta?: string;
 }
 
 interface TripState {
@@ -32,11 +37,13 @@ interface TripState {
   pickup: Location | null;
   destination: Location | null;
   selectedRoute: Route | null;
+  availableRoutes: Route[];
   currentLeg: number;
   driverId: string | null;
   metroTicket: string | null;
   paymentMethod: string;
   passengerCount: number;
+  transitTicketConfirmed: boolean;
 }
 
 interface TripContextType {
@@ -44,11 +51,13 @@ interface TripContextType {
   setPickup: (location: Location) => void;
   setDestination: (location: Location) => void;
   selectRoute: (route: Route) => void;
+  setAvailableRoutes: (routes: Route[]) => void;
   startTrip: () => void;
   nextLeg: () => void;
   setMetroTicket: (ticketId: string) => void;
   setPaymentMethod: (method: string) => void;
   setPassengerCount: (count: number) => void;
+  setTransitTicketConfirmed: (confirmed: boolean) => void;
   completeTrip: () => void;
   resetTrip: () => void;
 }
@@ -61,11 +70,13 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     pickup: null,
     destination: null,
     selectedRoute: null,
+    availableRoutes: [],
     currentLeg: 0,
     driverId: null,
     metroTicket: null,
     paymentMethod: 'upi',
     passengerCount: 1,
+    transitTicketConfirmed: false,
   });
 
   const setPickup = (location: Location) => {
@@ -80,13 +91,17 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTripState(prev => ({ ...prev, selectedRoute: route }));
   };
 
+  const setAvailableRoutes = (routes: Route[]) => {
+    setTripState(prev => ({ ...prev, availableRoutes: routes }));
+  };
+
   const startTrip = () => {
     const tripId = `TRIP-${Date.now()}`;
-    setTripState(prev => ({ ...prev, tripId, currentLeg: 0 }));
+    setTripState(prev => ({ ...prev, tripId, currentLeg: 0, transitTicketConfirmed: false }));
   };
 
   const nextLeg = () => {
-    setTripState(prev => ({ ...prev, currentLeg: prev.currentLeg + 1 }));
+    setTripState(prev => ({ ...prev, currentLeg: prev.currentLeg + 1, transitTicketConfirmed: false }));
   };
 
   const setMetroTicket = (ticketId: string) => {
@@ -101,6 +116,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTripState(prev => ({ ...prev, passengerCount: count }));
   };
 
+  const setTransitTicketConfirmed = (confirmed: boolean) => {
+    setTripState(prev => ({ ...prev, transitTicketConfirmed: confirmed }));
+  };
+
   const completeTrip = () => {
     setTripState(prev => ({ ...prev, tripId: null }));
   };
@@ -111,11 +130,13 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       pickup: null,
       destination: null,
       selectedRoute: null,
+      availableRoutes: [],
       currentLeg: 0,
       driverId: null,
       metroTicket: null,
       paymentMethod: 'upi',
       passengerCount: 1,
+      transitTicketConfirmed: false,
     });
   };
 
@@ -126,11 +147,13 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         setPickup,
         setDestination,
         selectRoute,
+        setAvailableRoutes,
         startTrip,
         nextLeg,
         setMetroTicket,
         setPaymentMethod,
         setPassengerCount,
+        setTransitTicketConfirmed,
         completeTrip,
         resetTrip,
       }}
