@@ -26,54 +26,53 @@ const TrackingLeg1 = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="h-14 bg-card border-b border-border flex items-center px-4 sticky top-0 z-10">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h1 className="ml-4 font-bold text-lg">Live Tracking - Leg 1</h1>
-      </div>
-
-      {/* Map Area */}
-      <div className="relative h-64 bg-secondary">
+      {/* Map Area - Larger */}
+      <div className="relative h-[45vh] bg-secondary">
         <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
           🗺️
         </div>
-        <div className="absolute top-4 left-4 right-4">
-          <div className="bg-card rounded-lg p-3 shadow-lg">
-            <p className="text-sm font-semibold">Arriving in {Math.ceil(eta)} mins</p>
+        <div className="absolute top-4 left-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </div>
+        <div className="absolute top-4 right-4">
+          <div className="bg-card/90 backdrop-blur rounded-full px-4 py-2 shadow-lg">
+            <p className="text-sm font-bold">{Math.ceil(eta)} min</p>
           </div>
         </div>
       </div>
 
-      {/* Details */}
-      <div className="flex-1 bg-card rounded-t-3xl -mt-8 relative z-10 p-6">
-        <div className="w-12 h-1 bg-border rounded-full mx-auto mb-6" />
+      {/* Driver Details Card */}
+      <div className="flex-1 bg-card rounded-t-3xl -mt-8 relative z-10 px-6 pt-4 pb-6">
+        <div className="w-12 h-1 bg-border rounded-full mx-auto mb-4" />
         
-        <p className="text-sm text-muted-foreground mb-2">Leg 1 of 3 • Uber Auto</p>
-        <h2 className="text-2xl font-bold mb-6">Rajesh Kumar</h2>
+        <p className="text-xs text-muted-foreground mb-1">Leg 1 of 3 • Uber Auto</p>
+        <h2 className="text-3xl font-bold mb-6">Rajesh Kumar</h2>
 
-        <div className="space-y-4 mb-6">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Rating</span>
-            <span className="font-semibold">⭐ 4.8</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Vehicle</span>
-            <span className="font-semibold">DL-1C-AB-1234</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Model</span>
-            <span className="font-semibold">White Maruti Swift</span>
+        <div className="bg-background border border-border rounded-2xl p-4 mb-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Rating</p>
+              <p className="font-bold text-lg">⭐ 4.8</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Vehicle</p>
+              <p className="font-bold text-sm">DL-1C-AB-1234</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-xs text-muted-foreground mb-1">Model</p>
+              <p className="font-bold">White Maruti Swift</p>
+            </div>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" size="lg">
+          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold">
             <Phone className="w-5 h-5 mr-2" />
             Call
           </Button>
-          <Button variant="outline" className="flex-1" size="lg">
+          <Button variant="outline" className="flex-1 h-12 rounded-xl font-semibold">
             <MessageCircle className="w-5 h-5 mr-2" />
             Message
           </Button>

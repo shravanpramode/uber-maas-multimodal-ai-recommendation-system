@@ -36,6 +36,7 @@ interface TripState {
   driverId: string | null;
   metroTicket: string | null;
   paymentMethod: string;
+  passengerCount: number;
 }
 
 interface TripContextType {
@@ -47,6 +48,7 @@ interface TripContextType {
   nextLeg: () => void;
   setMetroTicket: (ticketId: string) => void;
   setPaymentMethod: (method: string) => void;
+  setPassengerCount: (count: number) => void;
   completeTrip: () => void;
   resetTrip: () => void;
 }
@@ -63,6 +65,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     driverId: null,
     metroTicket: null,
     paymentMethod: 'upi',
+    passengerCount: 1,
   });
 
   const setPickup = (location: Location) => {
@@ -94,6 +97,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTripState(prev => ({ ...prev, paymentMethod: method }));
   };
 
+  const setPassengerCount = (count: number) => {
+    setTripState(prev => ({ ...prev, passengerCount: count }));
+  };
+
   const completeTrip = () => {
     setTripState(prev => ({ ...prev, tripId: null }));
   };
@@ -108,6 +115,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       driverId: null,
       metroTicket: null,
       paymentMethod: 'upi',
+      passengerCount: 1,
     });
   };
 
@@ -122,6 +130,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         nextLeg,
         setMetroTicket,
         setPaymentMethod,
+        setPassengerCount,
         completeTrip,
         resetTrip,
       }}
