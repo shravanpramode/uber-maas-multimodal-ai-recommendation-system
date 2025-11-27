@@ -279,14 +279,6 @@ const ChooseRide = () => {
 
       {/* Ride Options Section - 70% scrollable */}
       <div className="flex-1 overflow-y-auto bg-card px-4 py-4">
-        {/* Destination - shown at top since pickup is now in map */}
-        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
-          <div className="w-2 h-2 rounded-full bg-foreground" />
-          <p className="text-sm font-semibold">
-            {tripState.destination?.name || "DLF Cyber Park"}
-          </p>
-        </div>
-
         <h2 className="text-xl font-bold mb-4">Choose a ride</h2>
 
             {/* Multimodal - Best Value */}
@@ -318,6 +310,7 @@ const ChooseRide = () => {
                     </p>
                     <p className="text-xs text-muted-foreground mb-1.5">
                       Save ₹{multimodalRoute.savings} · {multimodalRoute.carbonSaved}kg CO₂ saved
+                      {tripState.passengerCount > 1 && ` · ${tripState.passengerCount} passengers`}
                     </p>
                     <p className="text-xs text-muted-foreground italic">
                       Combine Uber rides with public transit

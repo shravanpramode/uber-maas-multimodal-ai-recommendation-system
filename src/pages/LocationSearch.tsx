@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, MapPin, Clock, User, Plus } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, User, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { useTrip } from "@/contexts/TripContext";
 
 const LocationSearch = () => {
   const navigate = useNavigate();
-  const { setPickup, setDestination } = useTrip();
+  const { setPickup, setDestination, tripState, setPassengerCount } = useTrip();
   const [pickupLocation, setPickupLocation] = useState("");
   const [destinationLocation, setDestinationLocation] = useState("");
   const [activeInput, setActiveInput] = useState<"pickup" | "destination" | null>(null);
@@ -73,10 +73,28 @@ const LocationSearch = () => {
             <Clock className="w-4 h-4 mr-2" />
             Pickup now
           </Button>
-          <Button variant="secondary" className="rounded-full text-sm h-9 px-4">
-            <User className="w-4 h-4 mr-2" />
-            For me
-          </Button>
+          <div className="flex items-center gap-1 bg-secondary rounded-full h-9 px-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 rounded-full"
+              onClick={() => setPassengerCount(Math.max(1, tripState.passengerCount - 1))}
+            >
+              <Minus className="w-3 h-3" />
+            </Button>
+            <div className="flex items-center gap-1 px-2">
+              <User className="w-4 h-4" />
+              <span className="text-sm font-medium min-w-[12px] text-center">{tripState.passengerCount}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 rounded-full"
+              onClick={() => setPassengerCount(Math.min(4, tripState.passengerCount + 1))}
+            >
+              <Plus className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
 
         {/* Location Inputs */}
