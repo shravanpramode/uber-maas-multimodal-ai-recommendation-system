@@ -94,7 +94,7 @@ const MultimodalDetail = () => {
               {route.legs?.map((leg, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-lg">
-                    {leg.mode === "uber" ? "🚗" : leg.mode === "metro" ? "🚇" : "🚌"}
+                    {leg.mode === "auto" || leg.mode === "uber-go" || leg.mode === "go-sedan" ? "🚗" : leg.mode === "metro" || leg.mode === "suburban-train" ? "🚇" : leg.mode === "bus" ? "🚌" : leg.mode === "bike" ? "🏍️" : "🚶"}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">

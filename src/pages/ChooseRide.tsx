@@ -191,9 +191,9 @@ const ChooseRide = () => {
     totalPrice: 156.45,
     totalDuration: 42,
     legs: [
-      { mode: "uber" as const, from: "Pickup", to: "Metro Station", duration: 8, price: 52.15 },
+      { mode: "auto" as const, from: "Pickup", to: "Metro Station", duration: 8, price: 52.15 },
       { mode: "metro" as const, from: "Station A", to: "Station B", duration: 25, price: 28.0 },
-      { mode: "uber" as const, from: "Metro Station", to: "Destination", duration: 9, price: 76.3 },
+      { mode: "auto" as const, from: "Metro Station", to: "Destination", duration: 9, price: 76.3 },
     ],
     savings: 183.52,
     isRecommended: true,
@@ -227,8 +227,7 @@ const ChooseRide = () => {
     if (!selectedRide) return;
     
     if (selectedRide === "multimodal") {
-      selectRoute(multimodalRoute);
-      navigate("/trip-search");
+      navigate("/route-confirmation");
     } else {
       toast({
         title: "Out of scope",
