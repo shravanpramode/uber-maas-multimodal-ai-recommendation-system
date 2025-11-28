@@ -98,7 +98,12 @@ const TransitTicket = () => {
 
   const handleBack = () => {
     if (viewMode) {
-      navigate('/tracking-leg2');
+      const returnTo = searchParams.get('returnTo');
+      if (returnTo === 'tracking-bus') {
+        navigate('/tracking-bus');
+      } else {
+        navigate('/tracking-leg2');
+      }
     } else {
       navigate(-1);
     }

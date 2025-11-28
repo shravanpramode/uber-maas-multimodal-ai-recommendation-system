@@ -20,7 +20,7 @@ const TrackingLeg2 = () => {
   const showBanner = eta <= 5 && nextLeg3 && !['walk'].includes(nextLeg3.mode) && rideStarted;
   const passengerCount = tripState.passengerCount || 1;
 
-  // Generate stations based on transit type
+  // Generate stations based on transit type (metro and suburban-train only)
   const stations = useMemo(() => {
     const transitType = currentLeg?.mode;
     if (transitType === 'metro') {
@@ -32,14 +32,6 @@ const TrackingLeg2 = () => {
         { name: 'Lok Kalyan Marg', passed: false },
         { name: currentLeg?.to || 'Sarojini Nagar', passed: false },
       ];
-    } else if (transitType === 'bus') {
-      return [
-        { name: currentLeg?.from || 'Start', passed: false },
-        { name: 'Stop 1', passed: false },
-        { name: 'Stop 2', passed: false },
-        { name: 'Stop 3', passed: false },
-        { name: currentLeg?.to || 'End', passed: false },
-      ];
     } else if (transitType === 'suburban-train') {
       return [
         { name: currentLeg?.from || 'New Delhi', passed: false },
@@ -48,6 +40,7 @@ const TrackingLeg2 = () => {
         { name: currentLeg?.to || 'Safdarjung', passed: false },
       ];
     }
+    // Fallback for metro/train
     return [{ name: currentLeg?.from || 'Start', passed: false }, { name: currentLeg?.to || 'End', passed: false }];
   }, [currentLeg]);
 
@@ -87,7 +80,6 @@ const TrackingLeg2 = () => {
   const getTransitIcon = () => {
     switch (currentLeg?.mode) {
       case 'metro': return '🚇';
-      case 'bus': return '🚌';
       case 'suburban-train': return '🚆';
       default: return '🚇';
     }
@@ -96,7 +88,6 @@ const TrackingLeg2 = () => {
   const getTransitName = () => {
     switch (currentLeg?.mode) {
       case 'metro': return 'Delhi Metro';
-      case 'bus': return `Bus ${currentLeg?.lineInfo || '153A'}`;
       case 'suburban-train': return 'Suburban Train';
       default: return 'Transit';
     }

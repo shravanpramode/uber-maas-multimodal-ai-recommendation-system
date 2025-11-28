@@ -124,46 +124,156 @@ const MultimodalDetail = () => {
 
           {/* Comparison Card - Fastest vs Most Affordable */}
           <div className="mb-4 pb-4 border-b border-border">
-            <h3 className="text-xs font-bold mb-2">Your journey comparison</h3>
-            <div className="grid grid-cols-2 gap-2">
+            <h3 className="text-sm font-bold mb-3 text-foreground">Your journey comparison</h3>
+            <div className="grid grid-cols-2 gap-3">
               {/* Fastest */}
-              <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-2">
-                <div className="flex items-center gap-1 mb-1.5">
-                  <span className="text-yellow-600 text-xs">⚡</span>
-                  <span className="text-xs font-bold text-yellow-700 dark:text-yellow-300">Fastest</span>
+              <div className="bg-background border-2 border-foreground rounded-xl p-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-base">⚡</span>
+                  <span className="text-sm font-bold text-foreground">Fastest</span>
                 </div>
-                <div className="flex flex-wrap gap-1 mb-1.5">
+                <div className="flex flex-wrap gap-1 mb-2">
                   {fastestCombo.legs.map((leg, i) => (
                     <div key={i} className="flex items-center gap-0.5">
-                      <div className="w-4 h-4 rounded bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                      <div className="w-5 h-5 rounded bg-secondary flex items-center justify-center">
                         {getModeIcon(leg)}
                       </div>
-                      {i < fastestCombo.legs.length - 1 && <span className="text-[8px] text-muted-foreground">›</span>}
+                      {i < fastestCombo.legs.length - 1 && <span className="text-xs text-muted-foreground">›</span>}
                     </div>
                   ))}
                 </div>
-                <p className="text-xs font-bold">{fastestCombo.duration} min</p>
-                <p className="text-xs text-muted-foreground">₹{fastestCombo.price}</p>
+                <p className="text-base font-bold text-foreground">{fastestCombo.duration} min</p>
+                <p className="text-sm text-muted-foreground">₹{fastestCombo.price}</p>
               </div>
 
               {/* Most Affordable */}
-              <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-2">
-                <div className="flex items-center gap-1 mb-1.5">
-                  <span className="text-green-600 text-xs">💰</span>
-                  <span className="text-xs font-bold text-green-700 dark:text-green-300">Affordable</span>
+              <div className="bg-background border-2 border-foreground rounded-xl p-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-base">💰</span>
+                  <span className="text-sm font-bold text-foreground">Affordable</span>
                 </div>
-                <div className="flex flex-wrap gap-1 mb-1.5">
+                <div className="flex flex-wrap gap-1 mb-2">
                   {affordableCombo.legs.map((leg, i) => (
                     <div key={i} className="flex items-center gap-0.5">
-                      <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                      <div className="w-5 h-5 rounded bg-secondary flex items-center justify-center">
                         {getModeIcon(leg)}
                       </div>
-                      {i < affordableCombo.legs.length - 1 && <span className="text-[8px] text-muted-foreground">›</span>}
+                      {i < affordableCombo.legs.length - 1 && <span className="text-xs text-muted-foreground">›</span>}
                     </div>
                   ))}
                 </div>
-                <p className="text-xs font-bold">{affordableCombo.duration} min</p>
-                <p className="text-xs text-muted-foreground">₹{affordableCombo.price}</p>
+                <p className="text-base font-bold text-foreground">{affordableCombo.duration} min</p>
+                <p className="text-sm text-muted-foreground">₹{affordableCombo.price}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Multimodal vs Individual Uber Rides Comparison */}
+          <div className="mb-4 pb-4 border-b border-border">
+            <h3 className="text-sm font-bold mb-1 text-foreground">Multimodal vs Individual Rides</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              See how multimodal saves compared to taking individual Uber rides
+            </p>
+            
+            <div className="space-y-2">
+              {/* Uber Go Comparison */}
+              <div className="bg-secondary/50 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+                      <Car className="w-4 h-4 text-background" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Uber Go</p>
+                      <p className="text-xs text-muted-foreground">Individual ride</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-bold">₹245</p>
+                    <p className="text-xs text-muted-foreground">48 min</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <span className="text-destructive font-semibold">+₹{245 - route.totalPrice}</span>
+                    <span className="text-muted-foreground">costly</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-destructive font-semibold">+{48 - route.totalDuration} min</span>
+                    <span className="text-muted-foreground">slower</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Auto Comparison */}
+              <div className="bg-secondary/50 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+                      <Bike className="w-4 h-4 text-background" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Auto Rickshaw</p>
+                      <p className="text-xs text-muted-foreground">Individual ride</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-bold">₹180</p>
+                    <p className="text-xs text-muted-foreground">52 min</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <span className="text-destructive font-semibold">+₹{180 - route.totalPrice}</span>
+                    <span className="text-muted-foreground">costly</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-destructive font-semibold">+{52 - route.totalDuration} min</span>
+                    <span className="text-muted-foreground">slower</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Go Sedan Comparison */}
+              <div className="bg-secondary/50 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+                      <Car className="w-4 h-4 text-background" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Go Sedan</p>
+                      <p className="text-xs text-muted-foreground">Individual ride</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-bold">₹295</p>
+                    <p className="text-xs text-muted-foreground">46 min</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <span className="text-destructive font-semibold">+₹{295 - route.totalPrice}</span>
+                    <span className="text-muted-foreground">costly</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-destructive font-semibold">+{46 - route.totalDuration} min</span>
+                    <span className="text-muted-foreground">slower</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Summary Benefits */}
+            <div className="mt-3 bg-success/10 border border-success/30 rounded-xl p-3">
+              <p className="text-sm font-bold text-success mb-1.5">
+                ✓ Multimodal Benefits
+              </p>
+              <div className="space-y-1 text-xs text-success/80">
+                <p>• Save ₹{245 - route.totalPrice}-₹{295 - route.totalPrice} vs individual rides</p>
+                <p>• Up to {Math.abs(48 - route.totalDuration)} min faster than cars in traffic</p>
+                <p>• {route.carbonSaved}kg less CO₂ emissions</p>
+                <p>• More reliable with metro/train (no traffic delays)</p>
               </div>
             </div>
           </div>
