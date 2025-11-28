@@ -76,10 +76,13 @@ const TransitTicket = () => {
       const hasMoreLegsAfter = tripState.selectedRoute && nextLegIndex < tripState.selectedRoute.legs.length;
       
       if (hasMoreLegsAfter && nextLegAfterCurrent) {
-        const isNextTransit = ['metro', 'bus', 'suburban-train'].includes(nextLegAfterCurrent.mode);
+        const isNextBus = nextLegAfterCurrent.mode === 'bus';
+        const isNextMetroTrain = ['metro', 'suburban-train'].includes(nextLegAfterCurrent.mode);
         const isNextWalk = nextLegAfterCurrent.mode === 'walk';
         
-        if (isNextTransit) {
+        if (isNextBus) {
+          navigate('/tracking-bus');
+        } else if (isNextMetroTrain) {
           navigate('/tracking-leg2');
         } else if (isNextWalk) {
           navigate('/tracking-walk');

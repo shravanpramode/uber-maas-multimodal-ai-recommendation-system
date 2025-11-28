@@ -16,7 +16,8 @@ const TrackingWalk = () => {
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg];
   const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
   const isLastLeg = !tripState.selectedRoute || tripState.currentLeg >= tripState.selectedRoute.legs.length - 1;
-  const isNextLegTransit = nextLegData && ['metro', 'bus', 'suburban-train'].includes(nextLegData.mode);
+  const isNextLegBus = nextLegData?.mode === 'bus';
+  const isNextLegMetroTrain = nextLegData && ['metro', 'suburban-train'].includes(nextLegData.mode);
   const isNextLegRide = nextLegData && ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLegData.mode);
 
   const walkDuration = currentLeg?.duration || 6;
@@ -55,7 +56,9 @@ const TrackingWalk = () => {
     if (isLastLeg) {
       completeTrip();
       navigate('/trip-complete');
-    } else if (isNextLegTransit) {
+    } else if (isNextLegBus) {
+      navigate('/tracking-bus');
+    } else if (isNextLegMetroTrain) {
       navigate('/tracking-leg2');
     } else if (isNextLegRide) {
       navigate('/tracking-leg3');
@@ -170,11 +173,12 @@ const TrackingWalk = () => {
               <p className="text-xs font-semibold text-foreground/60 mb-1">NEXT</p>
               <div className="flex items-center gap-2">
                 <span className="text-lg">
-                  {isNextLegTransit ? '🚇' : isNextLegRide ? '🚗' : '🚶'}
+                  {isNextLegBus ? '🚌' : isNextLegMetroTrain ? '🚇' : isNextLegRide ? '🚗' : '🚶'}
                 </span>
                 <div>
                   <p className="font-medium text-sm">
-                    {isNextLegTransit ? `${nextLegData.mode === 'metro' ? 'Metro' : nextLegData.mode === 'bus' ? 'Bus' : 'Train'} from ${nextLegData.from}` : 
+                    {isNextLegBus ? `Bus from ${nextLegData.from}` :
+                     isNextLegMetroTrain ? `${nextLegData.mode === 'metro' ? 'Metro' : 'Train'} from ${nextLegData.from}` : 
                      isNextLegRide ? `${nextLegData.mode === 'auto' ? 'Auto' : nextLegData.mode === 'bike' ? 'Bike' : 'Cab'} to ${nextLegData.to}` :
                      `Walk to ${nextLegData.to}`}
                   </p>

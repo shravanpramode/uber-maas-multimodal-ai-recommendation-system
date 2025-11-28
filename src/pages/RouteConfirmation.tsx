@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronDown, Car, Train, Bus, Footprints, Bike, Check, Users } from "lucide-react";
+import { ArrowLeft, ChevronDown, Car, Train, Bus, Footprints, Bike, Check, Users, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip, Route, RouteLeg } from "@/contexts/TripContext";
@@ -411,16 +411,6 @@ const RouteConfirmation = () => {
               }`}
             >
               <div className="p-4">
-                {/* Tap to view details - top right */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/route-detail/${route.id}`);
-                  }}
-                  className="absolute top-2 right-2 text-[10px] text-foreground/50 hover:text-foreground underline"
-                >
-                  View details
-                </button>
                 {/* Top row: Price and Duration */}
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -436,6 +426,16 @@ const RouteConfirmation = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">Arrive {route.eta}</p>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/route-detail/${route.id}`);
+                      }}
+                      className="text-xs font-semibold text-foreground hover:underline flex items-center gap-0.5 mt-1 ml-auto"
+                    >
+                      View details
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
 
