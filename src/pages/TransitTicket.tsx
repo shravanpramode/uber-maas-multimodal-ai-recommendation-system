@@ -82,13 +82,7 @@ const TransitTicket = () => {
         if (isNextTransit) {
           navigate('/tracking-leg2');
         } else if (isNextWalk) {
-          // Check leg after walk
-          const legAfterWalk = tripState.selectedRoute?.legs[nextLegIndex + 1];
-          if (legAfterWalk) {
-            navigate('/tracking-leg3');
-          } else {
-            navigate('/trip-complete');
-          }
+          navigate('/tracking-walk');
         } else {
           // Ride leg (auto, bike, uber, etc.)
           navigate('/tracking-leg3');

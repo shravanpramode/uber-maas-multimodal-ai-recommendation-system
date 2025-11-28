@@ -411,6 +411,16 @@ const RouteConfirmation = () => {
               }`}
             >
               <div className="p-4">
+                {/* Tap to view details - top right */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/route-detail/${route.id}`);
+                  }}
+                  className="absolute top-2 right-2 text-[10px] text-foreground/50 hover:text-foreground underline"
+                >
+                  View details
+                </button>
                 {/* Top row: Price and Duration */}
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -443,7 +453,7 @@ const RouteConfirmation = () => {
                         </div>
                         {/* Line 2: Duration + Distance/Passengers */}
                         <div className="text-[10px] text-foreground/60 text-center">
-                          <span>{leg.duration}m</span>
+                          <span>{leg.duration} mins</span>
                           {leg.distance && (
                             <span className="ml-1">· {formatDistance(leg.distance)}</span>
                           )}

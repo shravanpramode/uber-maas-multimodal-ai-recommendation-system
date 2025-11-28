@@ -10,10 +10,12 @@ import ChooseRide from "./pages/ChooseRide";
 import RideDetail from "./pages/RideDetail";
 import MultimodalDetail from "./pages/MultimodalDetail";
 import RouteConfirmation from "./pages/RouteConfirmation";
+import RouteDetail from "./pages/RouteDetail";
 import TripSearch from "./pages/TripSearch";
 import TrackingLeg1 from "./pages/TrackingLeg1";
 import TrackingLeg2 from "./pages/TrackingLeg2";
 import TrackingLeg3 from "./pages/TrackingLeg3";
+import TrackingWalk from "./pages/TrackingWalk";
 import TransitTicket from "./pages/TransitTicket";
 import LiveTracking from "./pages/LiveTracking";
 import TripComplete from "./pages/TripComplete";
@@ -38,9 +40,11 @@ const App = () => (
             <Route path="/ride-detail" element={<RideDetail />} />
             <Route path="/multimodal-detail" element={<MultimodalDetail />} />
             <Route path="/route-confirmation" element={<RouteConfirmation />} />
+            <Route path="/route-detail/:routeId" element={<RouteDetail />} />
             <Route path="/tracking-leg1" element={<TrackingLeg1 />} />
             <Route path="/tracking-leg2" element={<TrackingLeg2 />} />
             <Route path="/tracking-leg3" element={<TrackingLeg3 />} />
+            <Route path="/tracking-walk" element={<TrackingWalk />} />
             <Route path="/transit-ticket" element={<TransitTicket />} />
             <Route path="/trip-search" element={<TripSearch />} />
             <Route path="/live-tracking" element={<LiveTracking />} />
