@@ -83,7 +83,8 @@ const TrackingLeg3 = () => {
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[2];
   const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
   const isLastLeg = !tripState.selectedRoute || tripState.currentLeg >= tripState.selectedRoute.legs.length - 1;
-  const isNextLegTransit = nextLegData && ['metro', 'bus', 'suburban-train'].includes(nextLegData.mode);
+  const isNextLegBus = nextLegData?.mode === 'bus';
+  const isNextLegMetroTrain = nextLegData && ['metro', 'suburban-train'].includes(nextLegData.mode);
   const isNextLegWalk = nextLegData?.mode === 'walk';
 
   // Get mode-specific info
@@ -142,7 +143,9 @@ const TrackingLeg3 = () => {
     setTransitEta(12);
     setTransitRideStarted(false);
     
-    if (isNextLegTransit) {
+    if (isNextLegBus) {
+      navigate('/tracking-bus');
+    } else if (isNextLegMetroTrain) {
       navigate('/tracking-leg2');
     } else if (isNextLegWalk) {
       navigate('/tracking-walk');

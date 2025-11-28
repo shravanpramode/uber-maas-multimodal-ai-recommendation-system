@@ -82,7 +82,8 @@ const TrackingLeg1 = () => {
 
   const currentLeg = tripState.selectedRoute?.legs[0];
   const nextLeg2 = tripState.selectedRoute?.legs[1];
-  const isNextLegTransit = nextLeg2 && ['metro', 'bus', 'suburban-train'].includes(nextLeg2.mode);
+  const isNextLegBus = nextLeg2?.mode === 'bus';
+  const isNextLegMetroTrain = nextLeg2 && ['metro', 'suburban-train'].includes(nextLeg2.mode);
   const isNextLegWalk = nextLeg2?.mode === 'walk';
 
   // Get mode-specific info
@@ -133,7 +134,9 @@ const TrackingLeg1 = () => {
         setTransitEta(12);
         setTransitRideStarted(false);
         
-        if (isNextLegTransit) {
+        if (isNextLegBus) {
+          navigate('/tracking-bus');
+        } else if (isNextLegMetroTrain) {
           navigate('/tracking-leg2');
         } else if (isNextLegWalk) {
           navigate('/tracking-walk');
@@ -145,7 +148,7 @@ const TrackingLeg1 = () => {
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [status, navigate, nextLeg, isNextLegTransit, isNextLegWalk, tripState.selectedRoute, setTransitProgress, setTransitEta, setTransitRideStarted]);
+  }, [status, navigate, nextLeg, isNextLegBus, isNextLegMetroTrain, isNextLegWalk, tripState.selectedRoute, setTransitProgress, setTransitEta, setTransitRideStarted]);
 
   const handleStartTrip = () => {
     setStatus('in_transit');

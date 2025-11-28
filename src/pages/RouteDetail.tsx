@@ -2,11 +2,17 @@ import { ArrowLeft, Car, Train, Bus, Footprints, Bike, Users, Clock, MapPin } fr
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip, RouteLeg } from "@/contexts/TripContext";
+import { useEffect } from "react";
 
 const RouteDetail = () => {
   const navigate = useNavigate();
   const { routeId } = useParams();
   const { tripState } = useTrip();
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   const route = tripState.availableRoutes?.find(r => r.id === routeId);
   const passengerCount = tripState.passengerCount || 1;
@@ -231,8 +237,7 @@ const RouteDetail = () => {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
         <Button 
           onClick={() => navigate(-1)}
-          variant="outline"
-          className="w-full h-12 text-base font-semibold rounded-xl"
+          className="w-full h-12 text-base font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90"
         >
           Close
         </Button>

@@ -16,8 +16,28 @@ const TripSearch = () => {
       setSearchProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
-          // Navigate to tracking-leg1 after search completes
-          setTimeout(() => navigate("/tracking-leg1"), 500);
+          // Check first leg mode to determine navigation
+          setTimeout(() => {
+            const firstLeg = tripState.selectedRoute?.legs[0];
+            const firstLegMode = firstLeg?.mode;
+            
+            // Bus → tracking-bus (separate from metro/train)
+            if (firstLegMode === 'bus') {
+              navigate("/tracking-bus");
+            }
+            // Metro/Train → tracking-leg2
+            else if (['metro', 'suburban-train'].includes(firstLegMode || '')) {
+              navigate("/tracking-leg2");
+            }
+            // Walk → tracking-walk
+            else if (firstLegMode === 'walk') {
+              navigate("/tracking-walk");
+            }
+            // Ride modes (auto/bike/uber) → tracking-leg1
+            else {
+              navigate("/tracking-leg1");
+            }
+          }, 500);
           return 100;
         }
         return prev + 5;
@@ -25,7 +45,7 @@ const TripSearch = () => {
     }, 200);
 
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, [navigate, tripState.selectedRoute]);
 
   const handleTipSelect = (amount: number) => {
     setTip(amount);
