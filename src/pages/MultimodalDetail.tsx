@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Wallet, Leaf, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar, Wallet, Leaf, ChevronRight, Car, Train, Bus, Footprints, Bike } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,133 +22,195 @@ const MultimodalDetail = () => {
     return null;
   }
 
+  // Price range for all combinations
+  const priceRange = { min: 38, max: 245 };
+  const fastestDuration = 32;
+
+  // Fastest and Most Affordable combinations for comparison
+  const fastestCombo = {
+    legs: ['Auto', 'Metro', 'Walk'],
+    duration: 32,
+    price: 124
+  };
+  
+  const affordableCombo = {
+    legs: ['Walk', 'Metro', 'Bus', 'Walk'],
+    duration: 55,
+    price: 45
+  };
+
+  const getModeIcon = (mode: string) => {
+    switch (mode) {
+      case 'Auto':
+      case 'Uber Go':
+      case 'Go Sedan':
+        return <Car className="w-3 h-3" />;
+      case 'Bike':
+        return <Bike className="w-3 h-3" />;
+      case 'Metro':
+      case 'Train':
+        return <Train className="w-3 h-3" />;
+      case 'Bus':
+        return <Bus className="w-3 h-3" />;
+      case 'Walk':
+        return <Footprints className="w-3 h-3" />;
+      default:
+        return <Car className="w-3 h-3" />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col font-uber">
       {/* Map Area */}
-      <div className="relative h-[55vh] bg-secondary">
-        <div className="absolute top-4 left-4 z-10">
+      <div className="relative h-[40vh] bg-secondary">
+        <div className="absolute top-3 left-3 z-10">
           <Button
             variant="secondary"
             size="icon"
-            className="rounded-full shadow-lg bg-white hover:bg-white/90"
+            className="rounded-full shadow-lg bg-white hover:bg-white/90 h-9 w-9"
             onClick={() => navigate("/choose-ride")}
           >
-            <ArrowLeft className="w-5 h-5 text-black" />
+            <ArrowLeft className="w-4 h-4 text-black" />
           </Button>
         </div>
 
-        {/* Map placeholder */}
-        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
+        <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
           🗺️
         </div>
 
-        {/* Pickup and Destination Labels */}
-        <div className="absolute top-20 left-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
+        <div className="absolute top-16 left-3 bg-white px-2 py-1 rounded-full shadow-md text-xs font-medium">
           {tripState.pickup?.name || "Connaught Place"}
         </div>
-        <div className="absolute bottom-20 right-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
+        <div className="absolute bottom-16 right-3 bg-white px-2 py-1 rounded-full shadow-md text-xs font-medium">
           {tripState.destination?.name || "DLF Cyber Park"}
         </div>
       </div>
 
       {/* Details Card */}
-      <div className="flex-1 bg-card rounded-t-3xl -mt-8 relative z-10 shadow-2xl">
-        <div className="px-4 py-6">
-          <div className="w-12 h-1 bg-border rounded-full mx-auto mb-6" />
+      <div className="flex-1 bg-card rounded-t-2xl -mt-6 relative z-10 shadow-2xl overflow-y-auto">
+        <div className="px-4 py-4">
+          <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
 
-          <h2 className="text-xl font-bold mb-6">Confirm details</h2>
+          <h2 className="text-lg font-bold mb-3">Confirm details</h2>
 
           {/* Multimodal Icon */}
-          <div className="flex justify-center mb-6">
-            <MultimodalIcon className="w-24 h-24 text-black" />
+          <div className="flex justify-center mb-3">
+            <MultimodalIcon className="w-14 h-14 text-black" />
           </div>
 
           {/* Route Info */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold">Multimodal Journey</h3>
-              <p className="text-xl font-bold">₹{route.totalPrice}</p>
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-base font-bold">Multimodal Journey</h3>
+              <p className="text-lg font-bold">₹{priceRange.min} - ₹{priceRange.max}</p>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              Auto + Metro + Auto · {route.totalDuration} min
+            <p className="text-xs text-muted-foreground mb-2">
+              Bike, Auto, Uber Go, Go Sedan, Uber XL (👥 &gt;4), Bus, Metro, Train, Walk · {fastestDuration} min fastest
             </p>
 
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex items-center gap-1 text-sm">
-                <Wallet className="w-4 h-4 text-success" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-1 text-xs">
+                <Wallet className="w-3.5 h-3.5 text-success" />
                 <span className="text-success font-semibold">
                   Save ₹{route.savings}
                 </span>
               </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Leaf className="w-4 h-4" />
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Leaf className="w-3.5 h-3.5" />
                 <span>{route.carbonSaved}kg CO₂ saved</span>
               </div>
             </div>
           </div>
 
-          {/* Journey Legs */}
-          <div className="mb-6 pb-6 border-b border-border">
-            <h3 className="text-sm font-bold mb-3">Your journey</h3>
-            <div className="space-y-3">
-              {route.legs?.map((leg, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-lg">
-                    {leg.mode === "auto" || leg.mode === "uber-go" || leg.mode === "go-sedan" ? "🚗" : leg.mode === "metro" || leg.mode === "suburban-train" ? "🚇" : leg.mode === "bus" ? "🚌" : leg.mode === "bike" ? "🏍️" : "🚶"}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold capitalize">{leg.mode}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {leg.from} → {leg.to}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold">₹{leg.price}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {leg.duration} min
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+          {/* Comparison Card - Fastest vs Most Affordable */}
+          <div className="mb-4 pb-4 border-b border-border">
+            <h3 className="text-xs font-bold mb-2">Your journey comparison</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {/* Fastest */}
+              <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-2">
+                <div className="flex items-center gap-1 mb-1.5">
+                  <span className="text-yellow-600 text-xs">⚡</span>
+                  <span className="text-xs font-bold text-yellow-700 dark:text-yellow-300">Fastest</span>
                 </div>
-              ))}
+                <div className="flex flex-wrap gap-1 mb-1.5">
+                  {fastestCombo.legs.map((leg, i) => (
+                    <div key={i} className="flex items-center gap-0.5">
+                      <div className="w-4 h-4 rounded bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                        {getModeIcon(leg)}
+                      </div>
+                      {i < fastestCombo.legs.length - 1 && <span className="text-[8px] text-muted-foreground">›</span>}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs font-bold">{fastestCombo.duration} min</p>
+                <p className="text-xs text-muted-foreground">₹{fastestCombo.price}</p>
+              </div>
+
+              {/* Most Affordable */}
+              <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-2">
+                <div className="flex items-center gap-1 mb-1.5">
+                  <span className="text-green-600 text-xs">💰</span>
+                  <span className="text-xs font-bold text-green-700 dark:text-green-300">Affordable</span>
+                </div>
+                <div className="flex flex-wrap gap-1 mb-1.5">
+                  {affordableCombo.legs.map((leg, i) => (
+                    <div key={i} className="flex items-center gap-0.5">
+                      <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                        {getModeIcon(leg)}
+                      </div>
+                      {i < affordableCombo.legs.length - 1 && <span className="text-[8px] text-muted-foreground">›</span>}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs font-bold">{affordableCombo.duration} min</p>
+                <p className="text-xs text-muted-foreground">₹{affordableCombo.price}</p>
+              </div>
             </div>
           </div>
 
           {/* Why Multimodal */}
-          <Card className="mb-6 p-4 bg-accent/5 border-accent/20">
-            <h3 className="text-sm font-bold mb-2">Why choose multimodal?</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
+          <Card className="mb-4 p-3 bg-accent/5 border-accent/20">
+            <h3 className="text-xs font-bold mb-2">Why choose multimodal?</h3>
+            <ul className="space-y-1.5 text-xs text-muted-foreground">
+              <li className="flex items-start gap-1.5">
                 <span className="text-success mt-0.5">✓</span>
                 <span>Save up to ₹{route.savings} compared to regular rides</span>
               </li>
-              <li className="flex items-start gap-2">
+              <li className="flex items-start gap-1.5">
                 <span className="text-success mt-0.5">✓</span>
                 <span>Reduce carbon footprint by {route.carbonSaved}kg CO₂</span>
               </li>
-              <li className="flex items-start gap-2">
+              <li className="flex items-start gap-1.5">
                 <span className="text-success mt-0.5">✓</span>
-                <span>Avoid traffic with metro during peak hours</span>
+                <span>Avoid traffic with Metro during peak hours</span>
               </li>
-              <li className="flex items-start gap-2">
+              <li className="flex items-start gap-1.5">
                 <span className="text-success mt-0.5">✓</span>
-                <span>Seamless transitions between transport modes</span>
+                <span>Public Bus routes cover areas not connected by metro</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-success mt-0.5">✓</span>
+                <span>Suburban trains connect distant suburbs quickly</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-success mt-0.5">✓</span>
+                <span>Seamless transitions between all transport modes</span>
               </li>
             </ul>
           </Card>
 
-          {/* Payment Method */}
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-border">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Personal</p>
-              <p className="text-sm font-semibold">Cash</p>
+          {/* Payment Method - UPI */}
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                <span className="text-white text-sm font-bold">₹</span>
+              </div>
+              <span className="text-xl font-bold">UPI</span>
             </div>
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8"
               onClick={() => {
                 toast({
                   title: "Out of scope",
@@ -162,17 +224,17 @@ const MultimodalDetail = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button
               onClick={handleConfirm}
-              className="flex-1 h-12 bg-black text-white hover:bg-black/90 font-semibold text-base"
+              className="flex-1 h-11 bg-black text-white hover:bg-black/90 font-semibold text-sm"
             >
               Choose Multimodal
             </Button>
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 border-2"
+              className="h-11 w-11 border-2"
               onClick={() => {
                 toast({
                   title: "Out of scope",
@@ -181,14 +243,13 @@ const MultimodalDetail = () => {
                 });
               }}
             >
-              <Calendar className="w-5 h-5" />
+              <Calendar className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Alternative Options */}
           <Button
             variant="link"
-            className="w-full mt-4 text-sm"
+            className="w-full mt-3 text-xs"
             onClick={() => navigate("/choose-ride")}
           >
             View alternative options

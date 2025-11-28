@@ -1,8 +1,8 @@
-import { X, MoreHorizontal, User } from "lucide-react";
+import { X, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 
 const TrackingLeg2 = () => {
@@ -17,6 +17,50 @@ const TrackingLeg2 = () => {
   const nextLeg3 = tripState.selectedRoute?.legs[tripState.currentLeg + 1] || tripState.selectedRoute?.legs[2];
   const isNextLegTransit = nextLeg3 && ['metro', 'bus', 'suburban-train'].includes(nextLeg3.mode);
   const hasMoreLegs = tripState.selectedRoute && tripState.currentLeg < tripState.selectedRoute.legs.length - 1;
+
+  // Generate stations based on transit type
+  const stations = useMemo(() => {
+    const transitType = currentLeg?.mode;
+    if (transitType === 'metro') {
+      return [
+        { name: currentLeg?.from || 'Rajiv Chowk', passed: false },
+        { name: 'Patel Chowk', passed: false },
+        { name: 'Central Secretariat', passed: false },
+        { name: 'Udyog Bhawan', passed: false },
+        { name: 'Lok Kalyan Marg', passed: false },
+        { name: currentLeg?.to || 'Sarojini Nagar', passed: false },
+      ];
+    } else if (transitType === 'bus') {
+      return [
+        { name: currentLeg?.from || 'Start', passed: false },
+        { name: 'Stop 1', passed: false },
+        { name: 'Stop 2', passed: false },
+        { name: 'Stop 3', passed: false },
+        { name: currentLeg?.to || 'End', passed: false },
+      ];
+    } else if (transitType === 'suburban-train') {
+      return [
+        { name: currentLeg?.from || 'New Delhi', passed: false },
+        { name: 'Shivaji Bridge', passed: false },
+        { name: 'Sadar Bazaar', passed: false },
+        { name: currentLeg?.to || 'Safdarjung', passed: false },
+      ];
+    }
+    return [{ name: currentLeg?.from || 'Start', passed: false }, { name: currentLeg?.to || 'End', passed: false }];
+  }, [currentLeg]);
+
+  // Calculate current and next station based on progress
+  const { currentStation, nextStation } = useMemo(() => {
+    const stationCount = stations.length;
+    const progressPerStation = 100 / (stationCount - 1);
+    const currentIndex = Math.min(Math.floor(progress / progressPerStation), stationCount - 2);
+    const nextIndex = Math.min(currentIndex + 1, stationCount - 1);
+    
+    return {
+      currentStation: stations[currentIndex]?.name || stations[0]?.name,
+      nextStation: stations[nextIndex]?.name || stations[stations.length - 1]?.name,
+    };
+  }, [progress, stations]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,98 +108,117 @@ const TrackingLeg2 = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Pre-booking Banner */}
       {showBanner && nextLeg3 && !['walk'].includes(nextLeg3.mode) && (
-        <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">✓</span>
+        <div className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✓</span>
             <div>
-              <p className="font-bold text-sm">NEXT RIDE PRE-BOOKED!</p>
-              <p className="text-xs opacity-90">Driver waiting at {currentLeg?.to}</p>
+              <p className="font-bold text-xs">NEXT RIDE PRE-BOOKED!</p>
+              <p className="text-[10px] opacity-90">Driver waiting at {currentLeg?.to}</p>
             </div>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 text-white hover:bg-white/20"
+            className="h-7 w-7 text-white hover:bg-white/20"
             onClick={() => setShowBanner(false)}
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </Button>
         </div>
       )}
 
       {/* Top Header Bar - Dark */}
-      <div className="bg-foreground text-background px-4 py-3">
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-foreground text-background px-4 py-2">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{getTransitIcon()}</span>
+            <span className="text-xl">{getTransitIcon()}</span>
             <div>
-              <p className="text-lg font-bold">On {getTransitName()}</p>
-              <p className="text-sm opacity-80">{Math.ceil(eta)} mins to {currentLeg?.to}</p>
+              <p className="text-base font-bold">On {getTransitName()}</p>
+              <p className="text-xs opacity-80">{Math.ceil(eta)} mins to {currentLeg?.to}</p>
             </div>
           </div>
         </div>
-        {/* Animated Progress Bar */}
         <AnimatedProgressBar progress={progress} mode={currentLeg?.mode || 'metro'} />
       </div>
 
       {/* Map Area */}
-      <div className="relative h-[35vh] bg-secondary">
-        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
+      <div className="relative h-[28vh] bg-secondary">
+        <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
           {getTransitIcon()}
         </div>
-        <div className="absolute top-4 left-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full">
-            <X className="w-5 h-5" />
+        <div className="absolute top-3 left-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
+            <X className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
       {/* Bottom Card */}
-      <div className="flex-1 bg-card rounded-t-3xl -mt-6 relative z-10 flex flex-col">
-        <div className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
+      <div className="flex-1 bg-card rounded-t-2xl -mt-4 relative z-10 flex flex-col">
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-3" />
         
-        <div className="px-6 flex-1">
-          <p className="text-xs text-muted-foreground mb-1">
+        <div className="px-4 flex-1">
+          {/* Current & Next Station */}
+          <div className="bg-secondary rounded-xl p-3 mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Current</p>
+                <p className="font-bold text-sm">{currentStation}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Next</p>
+                <p className="font-bold text-sm text-primary">{nextStation}</p>
+              </div>
+            </div>
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-500" 
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground mb-0.5">
             Leg {tripState.currentLeg + 1} of {tripState.selectedRoute?.legs.length || 3} • {getTransitName()}
           </p>
-          <h2 className="text-2xl font-bold mb-6">{currentLeg?.to || "Destination Station"}</h2>
+          <h2 className="text-xl font-bold mb-3">{currentLeg?.to || "Destination Station"}</h2>
 
           {/* Transit Details */}
-          <div className="border border-border rounded-xl p-4 mb-4">
-            <div className="space-y-3">
+          <div className="border border-border rounded-xl p-3 mb-3">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Line</span>
-                <span className="font-bold">{currentLeg?.lineInfo || "Yellow Line"}</span>
+                <span className="text-xs text-muted-foreground">Line</span>
+                <span className="font-bold text-sm">{currentLeg?.lineInfo || "Yellow Line"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Destination</span>
-                <span className="font-bold">{currentLeg?.to}</span>
+                <span className="text-xs text-muted-foreground">Destination</span>
+                <span className="font-bold text-sm">{currentLeg?.to}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Arriving in</span>
-                <span className="font-bold">{Math.ceil(eta)} mins</span>
+                <span className="text-xs text-muted-foreground">Arriving in</span>
+                <span className="font-bold text-sm">{Math.ceil(eta)} mins</span>
               </div>
             </div>
           </div>
 
           {/* Next Driver Card (if applicable) */}
           {nextLeg3 && ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLeg3.mode) && (
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-              <p className="text-sm font-bold mb-3 text-blue-900 dark:text-blue-100">Next Driver Waiting:</p>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                  <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
+              <p className="text-xs font-bold mb-2 text-blue-900 dark:text-blue-100">Next Driver Waiting:</p>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold">Amit Sharma</p>
-                  <p className="text-sm text-muted-foreground">Black Honda City</p>
+                  <p className="font-bold text-sm">Amit Sharma</p>
+                  <p className="text-xs text-muted-foreground">Black Honda City</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold">⭐ 4.6</p>
-                  <p className="text-sm font-medium">DL-2B-CD-5678</p>
+                  <p className="text-xs font-semibold">⭐ 4.6</p>
+                  <p className="text-xs font-medium">DL-2B-CD-5678</p>
                 </div>
               </div>
-              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-3">✓ Waiting at Gate 2</p>
+              <p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-2">✓ Waiting at Gate 2</p>
             </div>
           )}
         </div>

@@ -538,15 +538,24 @@ const ChooseRide = () => {
               });
             }}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
-                1
+            {selectedRide === "multimodal" ? (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">₹</span>
+                </div>
+                <span className="text-lg font-bold">UPI</span>
               </div>
-              <div className="text-left">
-                <p className="text-[10px] text-muted-foreground">Personal</p>
-                <p className="text-xs font-semibold">Cash</p>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
+                  1
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] text-muted-foreground">Personal</p>
+                  <p className="text-xs font-semibold">Cash</p>
+                </div>
               </div>
-            </div>
+            )}
           </Button>
           <Button
             variant="outline"
