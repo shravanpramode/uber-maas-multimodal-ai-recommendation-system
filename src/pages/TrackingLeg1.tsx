@@ -1,4 +1,4 @@
-import { X, Phone, MessageCircle, MoreHorizontal, ChevronDown, User, Play } from "lucide-react";
+import { X, Phone, MessageCircle, MoreHorizontal, User, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
@@ -91,43 +91,22 @@ const TrackingLeg1 = () => {
     }
   };
 
-  const getHeaderStatusText = () => {
-    switch (status) {
-      case 'pickup_countdown': return `Pick up in ${countdown}s`;
-      case 'ride_here': return 'Your ride is here';
-      case 'in_transit': return 'In-Transit';
-      case 'arrived': return 'Arrived';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Header Bar - Dark */}
-      <div className="bg-foreground text-background px-4 py-2">
-        <div className="flex items-center justify-between mb-1">
-          <div>
-            <p className={`text-base font-bold ${status === 'arrived' ? 'text-green-400' : ''}`}>
-              {getHeaderStatusText()}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-background/20 flex items-center justify-center">
-              <User className="w-3.5 h-3.5" />
-            </div>
-            <ChevronDown className="w-4 h-4" />
-          </div>
+      {/* Compact Floating Progress Card */}
+      <div className="mx-3 mt-3">
+        <div className="bg-foreground text-background px-4 py-2 rounded-2xl shadow-lg">
+          {status === 'arrived' && (
+            <span className="text-[10px] bg-green-500 px-2 py-0.5 rounded-full font-bold mb-1 inline-block">
+              Arrived
+            </span>
+          )}
+          <AnimatedProgressBar progress={progress} mode={currentLeg?.mode || 'auto'} />
         </div>
-        <div className="flex items-center gap-2 text-xs opacity-90 mb-2">
-          <span className="font-medium">Uber</span>
-          <span>{vehicleNumber}</span>
-          <span>•</span>
-          <span>{vehicleModel}</span>
-        </div>
-        <AnimatedProgressBar progress={progress} mode={currentLeg?.mode || 'auto'} />
       </div>
 
       {/* Map Area */}
-      <div className="relative h-[28vh] bg-secondary">
+      <div className="relative h-[30vh] bg-secondary">
         <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
           🗺️
         </div>
@@ -143,40 +122,29 @@ const TrackingLeg1 = () => {
 
       {/* Bottom Card */}
       <div className="flex-1 bg-card rounded-t-2xl -mt-4 relative z-10 flex flex-col">
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-3" />
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-2" />
         
-        <div className="px-4 flex-1">
-          <h2 className={`text-xl font-bold mb-3 ${status === 'arrived' ? 'text-green-600' : ''}`}>
+        <div className="px-4 flex-1 pb-20">
+          <h2 className={`text-lg font-bold mb-2 ${status === 'arrived' ? 'text-green-600' : ''}`}>
             {getStatusText()}
           </h2>
 
-          {/* Share PIN - Only show during pickup_countdown and ride_here */}
+          {/* Share PIN - Compact 40% smaller */}
           {(status === 'pickup_countdown' || status === 'ride_here') && (
-            <div className="bg-blue-600 rounded-xl p-3 mb-3 flex items-center justify-between">
-              <span className="text-white font-bold text-sm">Share PIN</span>
-              <div className="flex gap-1.5">
+            <div className="bg-blue-600 rounded-lg p-2 mb-2 flex items-center justify-between">
+              <span className="text-white font-bold text-xs">Share PIN</span>
+              <div className="flex gap-1">
                 {pin.map((digit, i) => (
-                  <div key={i} className="w-7 h-9 bg-white rounded flex items-center justify-center">
-                    <span className="text-base font-bold text-blue-600">{digit}</span>
+                  <div key={i} className="w-5 h-6 bg-white rounded flex items-center justify-center">
+                    <span className="text-sm font-bold text-blue-600">{digit}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Start Trip Button - Only show when ride is here */}
-          {status === 'ride_here' && (
-            <Button 
-              onClick={handleStartTrip}
-              className="w-full h-11 mb-3 bg-foreground text-background hover:bg-foreground/90 font-bold text-sm rounded-xl"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Start Trip
-            </Button>
-          )}
-
           {/* Trip Details */}
-          <div className="border border-border rounded-xl p-3 mb-3">
+          <div className="border border-border rounded-xl p-3 mb-2">
             <div className="flex items-center justify-between mb-1">
               <span className="font-semibold text-sm">Trip details</span>
               <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
@@ -188,7 +156,7 @@ const TrackingLeg1 = () => {
           {/* Driver Card */}
           <div className="border border-border rounded-xl p-3">
             <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-full bg-secondary flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                 <User className="w-5 h-5 text-muted-foreground" />
               </div>
               <div className="flex-1">
@@ -207,20 +175,33 @@ const TrackingLeg1 = () => {
             {/* Action Buttons - Only show during pickup phases */}
             {(status === 'pickup_countdown' || status === 'ride_here') && (
               <div className="flex gap-2 mt-3">
-                <Button variant="outline" className="flex-1 h-9 rounded-xl font-medium text-xs">
-                  <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+                <Button variant="outline" className="flex-1 h-8 rounded-xl font-medium text-xs">
+                  <MessageCircle className="w-3 h-3 mr-1" />
                   Message
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl">
-                  <Phone className="w-3.5 h-3.5" />
+                <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl">
+                  <Phone className="w-3 h-3" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl">
-                  <MoreHorizontal className="w-3.5 h-3.5" />
+                <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl">
+                  <MoreHorizontal className="w-3 h-3" />
                 </Button>
               </div>
             )}
           </div>
         </div>
+
+        {/* Fixed Bottom Start Trip Button */}
+        {status === 'ride_here' && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border">
+            <Button 
+              onClick={handleStartTrip}
+              className="w-full h-11 bg-foreground text-background hover:bg-foreground/90 font-bold text-sm rounded-xl"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Trip
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

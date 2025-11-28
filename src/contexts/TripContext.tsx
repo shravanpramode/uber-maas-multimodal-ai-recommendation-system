@@ -48,6 +48,8 @@ interface TripState {
 
 interface TripContextType {
   tripState: TripState;
+  transitExitMode: boolean;
+  setTransitExitMode: (mode: boolean) => void;
   setPickup: (location: Location) => void;
   setDestination: (location: Location) => void;
   selectRoute: (route: Route) => void;
@@ -79,6 +81,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     transitTicketConfirmed: false,
   });
 
+  const [transitExitMode, setTransitExitMode] = useState(false);
+
   const setPickup = (location: Location) => {
     setTripState(prev => ({ ...prev, pickup: location }));
   };
@@ -108,7 +112,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTripState(prev => ({ ...prev, metroTicket: ticketId }));
   };
 
-  const setPaymentMethod = (method: string) => {
+  const setPaymentMethodFn = (method: string) => {
     setTripState(prev => ({ ...prev, paymentMethod: method }));
   };
 
@@ -138,12 +142,15 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       passengerCount: 1,
       transitTicketConfirmed: false,
     });
+    setTransitExitMode(false);
   };
 
   return (
     <TripContext.Provider
       value={{
         tripState,
+        transitExitMode,
+        setTransitExitMode,
         setPickup,
         setDestination,
         selectRoute,
@@ -151,7 +158,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         startTrip,
         nextLeg,
         setMetroTicket,
-        setPaymentMethod,
+        setPaymentMethod: setPaymentMethodFn,
         setPassengerCount,
         setTransitTicketConfirmed,
         completeTrip,

@@ -1,95 +1,164 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
+import { ArrowLeft, Download, Briefcase, Mail, HelpCircle } from "lucide-react";
 
 const Receipt = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { resetTrip } = useTrip();
-  const totalCost = location.state?.totalCost || 95;
-  const tripId = location.state?.tripId || 'TRP-001';
+  const { resetTrip, tripState } = useTrip();
+  const totalCost = location.state?.totalCost || tripState.selectedRoute?.totalPrice || 95;
+  const method = location.state?.method || 'gpay';
 
   const handleBackHome = () => {
     resetTrip();
     navigate('/');
   };
 
+  const getMethodName = () => {
+    switch (method) {
+      case 'gpay': return 'Google Pay';
+      case 'phonepe': return 'PhonePe';
+      case 'amazonpay': return 'Amazon Pay';
+      case 'paytm': return 'Paytm';
+      default: return 'UPI';
+    }
+  };
+
+  const getModeIcon = (mode: string) => {
+    switch (mode) {
+      case 'auto': return '🛺';
+      case 'bike': return '🏍️';
+      case 'uber-go': return '🚗';
+      case 'go-sedan': return '🚙';
+      case 'uber-xl': return '🚐';
+      case 'metro': return '🚇';
+      case 'bus': return '🚌';
+      case 'suburban-train': return '🚆';
+      case 'walk': return '🚶';
+      default: return '🚗';
+    }
+  };
+
+  const gstAmount = (totalCost * 0.18).toFixed(2);
+  const savings = tripState.selectedRoute?.savings || 45;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="h-14 bg-card border-b border-border flex items-center px-4 sticky top-0 z-10">
-        <h1 className="font-bold text-lg">Receipt</h1>
-        <Button variant="ghost" size="icon" className="ml-auto" onClick={handleBackHome}>
-          ✕
+      <div className="p-3 flex items-center gap-3 border-b border-border">
+        <Button variant="ghost" size="icon" onClick={handleBackHome} className="h-8 w-8">
+          <ArrowLeft className="w-4 h-4" />
         </Button>
+        <span className="font-medium text-sm">Receipt</span>
       </div>
 
-      {/* Success Icon */}
-      <div className="bg-accent text-accent-foreground py-8 text-center">
-        <div className="text-6xl mb-4">✓</div>
-        <h2 className="text-2xl font-bold">Payment Successful</h2>
+      {/* Blue Hero Section */}
+      <div className="bg-blue-100 dark:bg-blue-950 px-4 py-5 relative overflow-hidden">
+        <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+        <h1 className="text-xl font-bold mt-1">Thanks for<br/>riding!</h1>
+        <div className="absolute right-4 bottom-0 text-5xl opacity-60">🚗</div>
       </div>
-
-      {/* Trip Details */}
-      <div className="flex-1 p-6">
-        <div className="bg-card border border-border rounded-xl p-6 mb-6">
-          <div className="space-y-3 mb-6">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Trip ID:</span>
-              <span className="text-sm font-semibold">{tripId}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Date:</span>
-              <span className="text-sm font-semibold">{new Date().toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">From:</span>
-              <span className="text-sm font-semibold">Gurgaon Cyber Hub</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">To:</span>
-              <span className="text-sm font-semibold">Connaught Place, Delhi</span>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-4 space-y-3">
-            <h3 className="font-bold mb-3">Trip Breakdown</h3>
-            <div className="flex justify-between text-sm">
-              <div>
-                <p className="font-semibold">Uber Auto (Leg 1)</p>
-                <p className="text-xs text-muted-foreground">Rajesh Kumar • 8 mins</p>
-              </div>
-              <span className="font-semibold">₹40</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <div>
-                <p className="font-semibold">Delhi Metro (Leg 2)</p>
-                <p className="text-xs text-muted-foreground">Yellow Line • 12 mins</p>
-              </div>
-              <span className="font-semibold">₹30</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <div>
-                <p className="font-semibold">Uber Auto (Leg 3)</p>
-                <p className="text-xs text-muted-foreground">Amit Sharma • 6 mins</p>
-              </div>
-              <span className="font-semibold">₹25</span>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-4 mt-4">
-            <div className="flex justify-between text-lg font-bold mb-2">
-              <span>TOTAL PAID</span>
-              <span>₹{totalCost}</span>
-            </div>
-            <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 text-center">
-              <p className="text-sm font-semibold text-accent">You Saved ₹45</p>
-              <p className="text-xs text-muted-foreground mt-1">vs direct Uber ride</p>
-            </div>
-          </div>
+      
+      {/* Content */}
+      <div className="flex-1 p-4">
+        {/* Total */}
+        <div className="flex justify-between items-center pb-2 mb-3 border-b-2 border-cyan-400">
+          <span className="text-lg font-bold">Total</span>
+          <span className="text-lg font-bold">₹{totalCost}</span>
         </div>
 
-        <Button onClick={handleBackHome} className="w-full" size="lg">
+        {/* Pickup & Destination */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+          <span className="w-2 h-2 bg-foreground rounded-full" />
+          <span className="truncate">{tripState.pickup?.name || 'Gurgaon Cyber Hub'}</span>
+          <span>→</span>
+          <span className="w-2 h-2 bg-foreground rounded-full" />
+          <span className="truncate">{tripState.destination?.name || 'Connaught Place'}</span>
+        </div>
+        
+        {/* Trip Charge with Leg Breakdown */}
+        <div className="py-2 border-b border-border">
+          <div className="flex justify-between mb-2 text-sm">
+            <span>Trip Charge</span>
+            <span>₹{totalCost}</span>
+          </div>
+          <div className="space-y-1.5 ml-2">
+            {tripState.selectedRoute?.legs.map((leg, i) => (
+              <div key={i} className="flex justify-between text-xs text-muted-foreground">
+                <span>{getModeIcon(leg.mode)} {leg.from} → {leg.to}</span>
+                <span>{leg.mode === 'walk' ? `${leg.distance || 0}m` : `₹${leg.price || 0}`}</span>
+              </div>
+            )) || (
+              <>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>🛺 Auto to Metro</span>
+                  <span>₹40</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>🚇 Metro</span>
+                  <span>₹30</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>🛺 Auto to Destination</span>
+                  <span>₹25</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Subtotal */}
+        <div className="py-2 border-b border-border flex justify-between text-sm">
+          <span>Subtotal</span>
+          <span>₹{totalCost}</span>
+        </div>
+        
+        {/* Payments Section */}
+        <div className="py-3">
+          <h3 className="font-bold text-sm mb-2">Payments</h3>
+          <div className="flex items-center gap-3">
+            <span className="text-xl">💵</span>
+            <div className="flex-1">
+              <p className="font-medium text-sm">UPI - {getMethodName()}</p>
+              <p className="text-[10px] text-muted-foreground">{new Date().toLocaleString('en-IN')}</p>
+            </div>
+            <span className="font-medium text-sm">₹{totalCost}</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            GST of ₹{gstAmount} included
+          </p>
+        </div>
+        
+        {/* Savings Info */}
+        <div className="bg-green-50 dark:bg-green-950 rounded-lg py-2 px-3 text-center text-xs text-green-700 dark:text-green-300 mb-4">
+          You saved ₹{savings} vs direct Uber ride
+        </div>
+        
+        {/* Action Links */}
+        <div className="space-y-0">
+          <button className="w-full py-3 flex items-center gap-3 border-b border-border text-sm">
+            <Download className="w-4 h-4" />
+            <span>Download PDF</span>
+          </button>
+          <button className="w-full py-3 flex items-center gap-3 border-b border-border text-sm">
+            <Briefcase className="w-4 h-4" />
+            <span>Automate business expensing</span>
+          </button>
+          <button className="w-full py-3 flex items-center gap-3 border-b border-border text-sm">
+            <Mail className="w-4 h-4" />
+            <span>Resend email</span>
+          </button>
+          <button className="w-full py-3 flex items-center gap-3 border-b border-border text-sm">
+            <HelpCircle className="w-4 h-4" />
+            <span>Review my fees and fares</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Back to Home */}
+      <div className="p-4 border-t border-border">
+        <Button onClick={handleBackHome} className="w-full h-10 text-sm font-medium">
           Back to Home
         </Button>
       </div>
