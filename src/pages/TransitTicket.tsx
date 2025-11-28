@@ -7,7 +7,7 @@ import { useMemo } from "react";
 
 const TransitTicket = () => {
   const navigate = useNavigate();
-  const { tripState, setTransitTicketConfirmed, transitExitMode, setTransitExitMode, nextLeg } = useTrip();
+  const { tripState, setTransitTicketConfirmed, transitExitMode, setTransitExitMode, nextLeg, setTransitProgress, setTransitEta } = useTrip();
   
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg];
   const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
@@ -37,15 +37,33 @@ const TransitTicket = () => {
 
   const handleButtonClick = () => {
     if (transitExitMode) {
-      // Scan & Exit mode - navigate to next leg or complete
+      // Scan & Exit mode - call nextLeg() NOW after exiting
       setTransitExitMode(false);
-      if (hasMoreLegs) {
-        if (isNextLegTransit) {
-          navigate('/transit-ticket');
+      nextLeg(); // Increment current leg
+      
+      // Reset transit progress for next transit leg
+      setTransitProgress(0);
+      setTransitEta(12);
+      
+      // Check what comes AFTER the leg we just completed
+      const nextLegIndex = tripState.currentLeg + 1; // This is the leg after current (which we just completed)
+      const nextLegAfterCurrent = tripState.selectedRoute?.legs[nextLegIndex];
+      const hasMoreLegsAfter = tripState.selectedRoute && nextLegIndex < tripState.selectedRoute.legs.length;
+      
+      if (hasMoreLegsAfter && nextLegAfterCurrent) {
+        const isNextTransit = ['metro', 'bus', 'suburban-train'].includes(nextLegAfterCurrent.mode);
+        if (isNextTransit) {
+          // Another transit leg
+          navigate('/tracking-leg2');
+        } else if (nextLegAfterCurrent.mode === 'walk') {
+          // Walk leg - skip to next
+          navigate('/tracking-leg3');
         } else {
+          // Ride leg (auto, bike, uber, etc.)
           navigate('/tracking-leg3');
         }
       } else {
+        // No more legs, trip complete
         navigate('/trip-complete');
       }
     } else {
@@ -81,7 +99,7 @@ const TransitTicket = () => {
           <h1 className="text-lg font-bold">
             {currentLeg?.from} → {currentLeg?.to}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/60">
             ₹{currentLeg?.price || 9}.00 • {tripState.passengerCount} ticket{tripState.passengerCount > 1 ? 's' : ''}
           </p>
         </div>
@@ -103,7 +121,7 @@ const TransitTicket = () => {
               ))}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/60">
             Ticket # - {ticketNumber}
           </p>
           <div className="w-1.5 h-1.5 rounded-full bg-foreground mt-2" />
@@ -125,7 +143,7 @@ const TransitTicket = () => {
 
         {/* ONDC Badge */}
         <div className="text-center py-3 border-t border-border">
-          <p className="text-[10px] text-muted-foreground font-medium tracking-wider">
+          <p className="text-xs text-foreground/60 font-medium tracking-wider">
             ONDC NETWORK
           </p>
         </div>

@@ -147,9 +147,9 @@ const TrackingLeg1 = () => {
           <div className="border border-border rounded-xl p-3 mb-2">
             <div className="flex items-center justify-between mb-1">
               <span className="font-semibold text-sm">Trip details</span>
-              <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+              <MoreHorizontal className="w-4 h-4 text-foreground/50" />
             </div>
-            <p className="text-xs text-muted-foreground">Meet at your pick-up spot on</p>
+            <p className="text-xs text-foreground/60">Meet at your pick-up spot on</p>
             <p className="font-medium text-sm">{tripState.pickup?.address || "IAF Station Road"}</p>
           </div>
 
@@ -157,18 +157,18 @@ const TrackingLeg1 = () => {
           <div className="border border-border rounded-xl p-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <User className="w-5 h-5 text-muted-foreground" />
+                <User className="w-5 h-5 text-foreground/50" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-xs font-medium bg-secondary px-1.5 py-0.5 rounded">⭐ {rating}</span>
                 </div>
                 <p className="font-bold text-sm">{driverName}</p>
-                <p className="text-xs text-muted-foreground">{trips.toLocaleString()} trips</p>
+                <p className="text-xs text-foreground/60">{trips.toLocaleString()} trips</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-sm">{vehicleNumber}</p>
-                <p className="text-xs text-muted-foreground">{vehicleModel}</p>
+                <p className="text-xs text-foreground/60">{vehicleModel}</p>
               </div>
             </div>
 

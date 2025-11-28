@@ -94,9 +94,9 @@ const TripComplete = () => {
                   <div className="flex items-center gap-1">
                     <span>{getModeIcon(leg.mode)}</span>
                     <span className="font-medium">{getModeName(leg.mode)}</span>
-                    <span className="text-muted-foreground">• {leg.duration} min</span>
+                    <span className="text-foreground/60">• {leg.duration} min</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground ml-5">{leg.from} → {leg.to}</p>
+                  <p className="text-xs text-foreground/60 ml-5">{leg.from} → {leg.to}</p>
                 </div>
                 <span className="font-medium">
                   {leg.mode === 'walk' ? `${leg.distance || 0}m` : `₹${leg.price || 0}`}
@@ -136,7 +136,7 @@ const TripComplete = () => {
           </div>
           
           {rating > 0 && (
-            <p className="text-center text-[10px] text-muted-foreground mb-2">
+            <p className="text-center text-xs text-foreground/60 mb-2">
               {rating === 5 && "Excellent! We're glad you had a great trip!"}
               {rating === 4 && "Great! Thanks for your feedback!"}
               {rating === 3 && "Good! We'll keep improving!"}
@@ -151,7 +151,7 @@ const TripComplete = () => {
                 onClick={() => setShowLegRatings(!showLegRatings)}
                 className="flex items-center justify-between w-full text-xs"
               >
-                <span className="text-muted-foreground">Rate individual rides</span>
+                <span className="text-foreground/60">Rate individual rides</span>
                 {showLegRatings ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               
@@ -201,7 +201,7 @@ const TripComplete = () => {
             <span className="text-xl">🌱</span>
             <div>
               <p className="font-medium text-xs text-green-700 dark:text-green-300">Eco-Friendly!</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-foreground/60">
                 Saved {tripState.selectedRoute.carbonSaved}kg CO₂
               </p>
             </div>
