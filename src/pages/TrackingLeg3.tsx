@@ -124,7 +124,7 @@ const TrackingLeg3 = () => {
         <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-2" />
         
         <div className="px-4 flex-1 pb-20">
-          <p className="text-[10px] text-muted-foreground mb-0.5">
+          <p className="text-xs text-foreground/60 mb-0.5">
             Leg {(tripState.currentLeg || 2) + 1} of {tripState.selectedRoute?.legs.length || 3} • {isLastLeg ? 'Final Ride' : 'Connecting Ride'}
           </p>
           <h2 className={`text-lg font-bold mb-2 ${status === 'arrived' ? 'text-green-600' : ''}`}>
@@ -149,9 +149,9 @@ const TrackingLeg3 = () => {
           <div className="border border-border rounded-xl p-3 mb-2">
             <div className="flex items-center justify-between mb-1">
               <span className="font-semibold text-sm">Trip details</span>
-              <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+              <MoreHorizontal className="w-4 h-4 text-foreground/50" />
             </div>
-            <p className="text-xs text-muted-foreground">Drop-off at</p>
+            <p className="text-xs text-foreground/60">Drop-off at</p>
             <p className="font-medium text-sm">{tripState.destination?.address || "Sarojini Nagar Market"}</p>
           </div>
 
@@ -159,18 +159,18 @@ const TrackingLeg3 = () => {
           <div className="border border-border rounded-xl p-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <User className="w-5 h-5 text-muted-foreground" />
+                <User className="w-5 h-5 text-foreground/50" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-xs font-medium bg-secondary px-1.5 py-0.5 rounded">⭐ {rating}</span>
                 </div>
                 <p className="font-bold text-sm">{driverName}</p>
-                <p className="text-xs text-muted-foreground">{trips.toLocaleString()} trips</p>
+                <p className="text-xs text-foreground/60">{trips.toLocaleString()} trips</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-sm">{vehicleNumber}</p>
-                <p className="text-xs text-muted-foreground">{vehicleModel}</p>
+                <p className="text-xs text-foreground/60">{vehicleModel}</p>
               </div>
             </div>
 

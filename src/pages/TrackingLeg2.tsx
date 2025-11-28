@@ -2,21 +2,21 @@ import { X, User, Ticket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 
 const TrackingLeg2 = () => {
   const navigate = useNavigate();
-  const { nextLeg, tripState, setTransitExitMode } = useTrip();
-  const [eta, setEta] = useState(12);
-  const [progress, setProgress] = useState(0);
-  const [showBanner, setShowBanner] = useState(false);
+  const { tripState, setTransitExitMode, setTransitProgress, setTransitEta } = useTrip();
+  
+  // Use context state for persistence
+  const eta = tripState.transitEta;
+  const progress = tripState.transitProgress;
   const totalTime = 12;
 
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[1];
   const nextLeg3 = tripState.selectedRoute?.legs[tripState.currentLeg + 1] || tripState.selectedRoute?.legs[2];
-  const isNextLegTransit = nextLeg3 && ['metro', 'bus', 'suburban-train'].includes(nextLeg3.mode);
-  const hasMoreLegs = tripState.selectedRoute && tripState.currentLeg < tripState.selectedRoute.legs.length - 1;
+  const showBanner = eta <= 5 && nextLeg3 && !['walk'].includes(nextLeg3.mode);
 
   // Generate stations based on transit type
   const stations = useMemo(() => {
@@ -64,28 +64,21 @@ const TrackingLeg2 = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setEta(prev => {
-        const newEta = prev - 0.5;
-        setProgress(((totalTime - newEta) / totalTime) * 100);
-        
-        // Show prebooked banner only when 5 mins or less remaining
-        if (newEta <= 5 && nextLeg3 && !['walk'].includes(nextLeg3.mode)) {
-          setShowBanner(true);
-        }
-        
-        if (newEta <= 0) {
-          clearInterval(interval);
-          nextLeg();
-          // Navigate to transit-ticket with exit mode
-          setTransitExitMode(true);
-          navigate('/transit-ticket');
-          return 0;
-        }
-        return newEta;
-      });
-    }, 2000);
+      const newEta = eta - 0.75; // 1.5x faster
+      const newProgress = ((totalTime - newEta) / totalTime) * 100;
+      
+      setTransitEta(Math.max(0, newEta));
+      setTransitProgress(Math.min(100, newProgress));
+      
+      if (newEta <= 0) {
+        clearInterval(interval);
+        // DON'T call nextLeg() here - do it in TransitTicket after Scan & Exit
+        setTransitExitMode(true);
+        navigate('/transit-ticket');
+      }
+    }, 1300); // Faster interval
     return () => clearInterval(interval);
-  }, [navigate, nextLeg, nextLeg3, setTransitExitMode]);
+  }, [navigate, setTransitExitMode, eta, setTransitEta, setTransitProgress]);
 
   const getTransitIcon = () => {
     switch (currentLeg?.mode) {
@@ -109,23 +102,27 @@ const TrackingLeg2 = () => {
     navigate('/transit-ticket');
   };
 
+  const handleCloseBanner = () => {
+    // Just visual close, doesn't affect showBanner logic
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Pre-booking Banner - Only show when 5 mins or less */}
-      {showBanner && nextLeg3 && !['walk'].includes(nextLeg3.mode) && (
+      {showBanner && (
         <div className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg">✓</span>
             <div>
               <p className="font-bold text-xs">NEXT RIDE PRE-BOOKED!</p>
-              <p className="text-[10px] opacity-90">Driver waiting at {currentLeg?.to}</p>
+              <p className="text-xs text-white/80">Driver waiting at {currentLeg?.to}</p>
             </div>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
             className="h-7 w-7 text-white hover:bg-white/20"
-            onClick={() => setShowBanner(false)}
+            onClick={handleCloseBanner}
           >
             <X className="w-3.5 h-3.5" />
           </Button>
@@ -139,7 +136,7 @@ const TrackingLeg2 = () => {
             <span className="text-xl">{getTransitIcon()}</span>
             <div>
               <p className="text-base font-bold">On {getTransitName()}</p>
-              <p className="text-xs opacity-80">{Math.ceil(eta)} mins to {currentLeg?.to}</p>
+              <p className="text-xs text-background/80">{Math.ceil(eta)} mins to {currentLeg?.to}</p>
             </div>
           </div>
         </div>
@@ -167,15 +164,15 @@ const TrackingLeg2 = () => {
           <div className="bg-secondary rounded-xl p-3 mb-2">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Current</p>
+                <p className="text-xs text-foreground/60 uppercase tracking-wide">Current</p>
                 <p className="font-bold text-sm">{currentStation}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Next</p>
+                <p className="text-xs text-foreground/60 uppercase tracking-wide">Next</p>
                 <p className="font-bold text-sm text-primary">{nextStation}</p>
               </div>
             </div>
-            <div className="h-1 bg-muted rounded-full overflow-hidden">
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-primary transition-all duration-500" 
                 style={{ width: `${progress}%` }}
@@ -183,7 +180,7 @@ const TrackingLeg2 = () => {
             </div>
           </div>
 
-          <p className="text-[10px] text-muted-foreground mb-0.5">
+          <p className="text-xs text-foreground/60 mb-0.5">
             Leg {tripState.currentLeg + 1} of {tripState.selectedRoute?.legs.length || 3} • {getTransitName()}
           </p>
           <h2 className="text-lg font-bold mb-2">{currentLeg?.to || "Destination Station"}</h2>
@@ -202,15 +199,15 @@ const TrackingLeg2 = () => {
           <div className="border border-border rounded-xl p-3 mb-2">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Line</span>
+                <span className="text-xs text-foreground/60">Line</span>
                 <span className="font-bold text-sm">{currentLeg?.lineInfo || "Yellow Line"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Destination</span>
+                <span className="text-xs text-foreground/60">Destination</span>
                 <span className="font-bold text-sm">{currentLeg?.to}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Arriving in</span>
+                <span className="text-xs text-foreground/60">Arriving in</span>
                 <span className="font-bold text-sm">{Math.ceil(eta)} mins</span>
               </div>
             </div>
@@ -226,7 +223,7 @@ const TrackingLeg2 = () => {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-sm">Amit Sharma</p>
-                  <p className="text-xs text-muted-foreground">Black Honda City</p>
+                  <p className="text-xs text-foreground/60">Black Honda City</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold">⭐ 4.6</p>

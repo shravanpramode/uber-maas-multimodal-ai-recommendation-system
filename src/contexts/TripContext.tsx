@@ -44,6 +44,8 @@ interface TripState {
   paymentMethod: string;
   passengerCount: number;
   transitTicketConfirmed: boolean;
+  transitProgress: number;
+  transitEta: number;
 }
 
 interface TripContextType {
@@ -60,6 +62,8 @@ interface TripContextType {
   setPaymentMethod: (method: string) => void;
   setPassengerCount: (count: number) => void;
   setTransitTicketConfirmed: (confirmed: boolean) => void;
+  setTransitProgress: (progress: number) => void;
+  setTransitEta: (eta: number) => void;
   completeTrip: () => void;
   resetTrip: () => void;
 }
@@ -79,6 +83,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     paymentMethod: 'upi',
     passengerCount: 1,
     transitTicketConfirmed: false,
+    transitProgress: 0,
+    transitEta: 12,
   });
 
   const [transitExitMode, setTransitExitMode] = useState(false);
@@ -124,6 +130,14 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTripState(prev => ({ ...prev, transitTicketConfirmed: confirmed }));
   };
 
+  const setTransitProgress = (progress: number) => {
+    setTripState(prev => ({ ...prev, transitProgress: progress }));
+  };
+
+  const setTransitEta = (eta: number) => {
+    setTripState(prev => ({ ...prev, transitEta: eta }));
+  };
+
   const completeTrip = () => {
     setTripState(prev => ({ ...prev, tripId: null }));
   };
@@ -141,6 +155,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       paymentMethod: 'upi',
       passengerCount: 1,
       transitTicketConfirmed: false,
+      transitProgress: 0,
+      transitEta: 12,
     });
     setTransitExitMode(false);
   };
@@ -161,6 +177,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         setPaymentMethod: setPaymentMethodFn,
         setPassengerCount,
         setTransitTicketConfirmed,
+        setTransitProgress,
+        setTransitEta,
         completeTrip,
         resetTrip,
       }}

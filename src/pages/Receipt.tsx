@@ -85,21 +85,21 @@ const Receipt = () => {
           </div>
           <div className="space-y-1.5 ml-2">
             {tripState.selectedRoute?.legs.map((leg, i) => (
-              <div key={i} className="flex justify-between text-xs text-muted-foreground">
+              <div key={i} className="flex justify-between text-xs text-foreground/60">
                 <span>{getModeIcon(leg.mode)} {leg.from} → {leg.to}</span>
                 <span>{leg.mode === 'walk' ? `${leg.distance || 0}m` : `₹${leg.price || 0}`}</span>
               </div>
             )) || (
               <>
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-xs text-foreground/60">
                   <span>🛺 Auto to Metro</span>
                   <span>₹40</span>
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-xs text-foreground/60">
                   <span>🚇 Metro</span>
                   <span>₹30</span>
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-xs text-foreground/60">
                   <span>🛺 Auto to Destination</span>
                   <span>₹25</span>
                 </div>
@@ -121,11 +121,11 @@ const Receipt = () => {
             <span className="text-xl">💵</span>
             <div className="flex-1">
               <p className="font-medium text-sm">UPI - {getMethodName()}</p>
-              <p className="text-[10px] text-muted-foreground">{new Date().toLocaleString('en-IN')}</p>
+              <p className="text-xs text-foreground/60">{new Date().toLocaleString('en-IN')}</p>
             </div>
             <span className="font-medium text-sm">₹{totalCost}</span>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">
+          <p className="text-xs text-foreground/60 mt-2">
             GST of ₹{gstAmount} included
           </p>
         </div>
