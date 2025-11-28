@@ -1,4 +1,4 @@
-import { X, Phone, MessageCircle, MoreHorizontal, User, Play } from "lucide-react";
+import { X, Phone, MessageCircle, MoreHorizontal, User, Play, Bike, Car } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
@@ -6,6 +6,71 @@ import { useEffect, useState } from "react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 
 type TrackingStatus = 'pickup_countdown' | 'ride_here' | 'in_transit' | 'arrived';
+
+// Helper function to get mode-specific vehicle/driver info
+const getModeInfo = (mode: string) => {
+  switch (mode) {
+    case 'bike':
+      return { 
+        vehicleModel: 'Hero Splendor', 
+        vehicleType: 'Bike', 
+        color: 'Black',
+        driverName: 'Rajesh Kumar',
+        rating: 4.85,
+        trips: 1234
+      };
+    case 'auto':
+      return { 
+        vehicleModel: 'Auto Rickshaw', 
+        vehicleType: 'Auto', 
+        color: 'Green/Yellow',
+        driverName: 'M Dhinesh Kumar',
+        rating: 4.72,
+        trips: 2156
+      };
+    case 'uber-go':
+      return { 
+        vehicleModel: 'Maruti Swift', 
+        vehicleType: 'Uber Go', 
+        color: 'White',
+        driverName: 'Suresh Sharma',
+        rating: 4.91,
+        trips: 1892
+      };
+    case 'go-sedan':
+      return { 
+        vehicleModel: 'Honda City', 
+        vehicleType: 'Go Sedan', 
+        color: 'Silver',
+        driverName: 'Vikram Singh',
+        rating: 4.95,
+        trips: 3421
+      };
+    case 'uber-xl':
+      return { 
+        vehicleModel: 'Toyota Innova', 
+        vehicleType: 'Uber XL', 
+        color: 'White',
+        driverName: 'Amit Patel',
+        rating: 4.88,
+        trips: 2789
+      };
+    default:
+      return { 
+        vehicleModel: 'Maruti Swift', 
+        vehicleType: 'Uber Go', 
+        color: 'White',
+        driverName: 'Driver',
+        rating: 4.80,
+        trips: 1500
+      };
+  }
+};
+
+const getVehicleIcon = (mode: string) => {
+  if (mode === 'bike') return <Bike className="w-5 h-5 text-foreground/50" />;
+  return <Car className="w-5 h-5 text-foreground/50" />;
+};
 
 const TrackingLeg1 = () => {
   const navigate = useNavigate();
@@ -18,6 +83,10 @@ const TrackingLeg1 = () => {
   const currentLeg = tripState.selectedRoute?.legs[0];
   const nextLeg2 = tripState.selectedRoute?.legs[1];
   const isNextLegTransit = nextLeg2 && ['metro', 'bus', 'suburban-train'].includes(nextLeg2.mode);
+  const isNextLegWalk = nextLeg2?.mode === 'walk';
+
+  // Get mode-specific info
+  const modeInfo = getModeInfo(currentLeg?.mode || 'auto');
 
   // Phase 1: Pickup countdown (5 seconds)
   useEffect(() => {
@@ -65,33 +134,30 @@ const TrackingLeg1 = () => {
         setTransitRideStarted(false);
         
         if (isNextLegTransit) {
-          // Go to transit tracking page (not ticket page)
           navigate('/tracking-leg2');
+        } else if (isNextLegWalk) {
+          navigate('/tracking-walk');
         } else if (tripState.selectedRoute && tripState.selectedRoute.legs.length > 1) {
-          navigate('/tracking-leg2');
+          navigate('/tracking-leg3');
         } else {
           navigate('/trip-complete');
         }
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [status, navigate, nextLeg, isNextLegTransit, tripState.selectedRoute, setTransitProgress, setTransitEta, setTransitRideStarted]);
+  }, [status, navigate, nextLeg, isNextLegTransit, isNextLegWalk, tripState.selectedRoute, setTransitProgress, setTransitEta, setTransitRideStarted]);
 
   const handleStartTrip = () => {
     setStatus('in_transit');
   };
 
   const pin = ['2', '5', '6', '1'];
-  const driverName = "M Dhinesh Kumar";
   const vehicleNumber = currentLeg?.vehicleNumber || "TN18AM9263";
-  const vehicleModel = "Red Ford Aspire";
-  const rating = 4.97;
-  const trips = 1671;
 
   const getStatusText = () => {
     switch (status) {
-      case 'pickup_countdown': return `Pick up in ${countdown}s`;
-      case 'ride_here': return 'Your ride is here';
+      case 'pickup_countdown': return `Your ${modeInfo.vehicleType} arrives in ${countdown}s`;
+      case 'ride_here': return `Your ${modeInfo.vehicleType} is here`;
       case 'in_transit': return 'In-Transit';
       case 'arrived': return `You've arrived at ${currentLeg?.to || 'destination'}`;
     }
@@ -131,6 +197,9 @@ const TrackingLeg1 = () => {
         <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-2" />
         
         <div className="px-4 flex-1 pb-20">
+          <p className="text-xs text-foreground/60 mb-0.5">
+            Leg 1 of {tripState.selectedRoute?.legs.length || 1} • {modeInfo.vehicleType}
+          </p>
           <h2 className={`text-lg font-bold mb-2 ${status === 'arrived' ? 'text-green-600' : ''}`}>
             {getStatusText()}
           </h2>
@@ -155,26 +224,34 @@ const TrackingLeg1 = () => {
               <span className="font-semibold text-sm">Trip details</span>
               <MoreHorizontal className="w-4 h-4 text-foreground/50" />
             </div>
-            <p className="text-xs text-foreground/60">Meet at your pick-up spot on</p>
-            <p className="font-medium text-sm">{tripState.pickup?.address || "IAF Station Road"}</p>
+            <div className="space-y-1">
+              <div>
+                <p className="text-xs text-foreground/60">Pick-up</p>
+                <p className="font-medium text-sm">{currentLeg?.from || tripState.pickup?.name || "Pickup"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground/60">Drop-off</p>
+                <p className="font-medium text-sm">{currentLeg?.to || "Destination"}</p>
+              </div>
+            </div>
           </div>
 
           {/* Driver Card */}
           <div className="border border-border rounded-xl p-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <User className="w-5 h-5 text-foreground/50" />
+                {currentLeg?.mode === 'bike' ? getVehicleIcon('bike') : <User className="w-5 h-5 text-foreground/50" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs font-medium bg-secondary px-1.5 py-0.5 rounded">⭐ {rating}</span>
+                  <span className="text-xs font-medium bg-secondary px-1.5 py-0.5 rounded">⭐ {modeInfo.rating}</span>
                 </div>
-                <p className="font-bold text-sm">{driverName}</p>
-                <p className="text-xs text-foreground/60">{trips.toLocaleString()} trips</p>
+                <p className="font-bold text-sm">{modeInfo.driverName}</p>
+                <p className="text-xs text-foreground/60">{modeInfo.trips.toLocaleString()} trips</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-sm">{vehicleNumber}</p>
-                <p className="text-xs text-foreground/60">{vehicleModel}</p>
+                <p className="text-xs text-foreground/60">{modeInfo.color} {modeInfo.vehicleModel}</p>
               </div>
             </div>
 
