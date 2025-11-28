@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Star, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, ChevronRight, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { useState } from "react";
@@ -11,6 +11,7 @@ const TripComplete = () => {
   const [showLegRatings, setShowLegRatings] = useState(false);
   const [legRatings, setLegRatings] = useState<Record<number, number>>({});
   const [showUpiPopup, setShowUpiPopup] = useState(false);
+  const passengerCount = tripState.passengerCount || 1;
 
   const totalCost = tripState.selectedRoute?.totalPrice || 95;
 
@@ -62,6 +63,10 @@ const TripComplete = () => {
     }
   };
 
+  const isTransitMode = (mode: string) => {
+    return ['metro', 'bus', 'suburban-train'].includes(mode);
+  };
+
   const rideLegs = tripState.selectedRoute?.legs.filter(leg => 
     ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(leg.mode)
   ) || [];
@@ -95,11 +100,21 @@ const TripComplete = () => {
                     <span>{getModeIcon(leg.mode)}</span>
                     <span className="font-medium">{getModeName(leg.mode)}</span>
                     <span className="text-foreground/60">• {leg.duration} min</span>
+                    {/* Passenger count for transit modes */}
+                    {isTransitMode(leg.mode) && passengerCount > 1 && (
+                      <span className="flex items-center gap-0.5 text-foreground/60 ml-1">
+                        <Users className="w-3 h-3" />
+                        <span>×{passengerCount}</span>
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-foreground/60 ml-5">{leg.from} → {leg.to}</p>
                 </div>
                 <span className="font-medium">
-                  {leg.mode === 'walk' ? `${leg.distance || 0}m` : `₹${leg.price || 0}`}
+                  {leg.mode === 'walk' 
+                    ? `${leg.distance || 0}m` 
+                    : `₹${isTransitMode(leg.mode) ? (leg.price || 0) * passengerCount : leg.price || 0}`
+                  }
                 </span>
               </div>
             ))}

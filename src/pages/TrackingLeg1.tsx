@@ -9,7 +9,7 @@ type TrackingStatus = 'pickup_countdown' | 'ride_here' | 'in_transit' | 'arrived
 
 const TrackingLeg1 = () => {
   const navigate = useNavigate();
-  const { nextLeg, tripState } = useTrip();
+  const { nextLeg, tripState, setTransitProgress, setTransitEta, setTransitRideStarted } = useTrip();
   const [status, setStatus] = useState<TrackingStatus>('pickup_countdown');
   const [countdown, setCountdown] = useState(5);
   const [progress, setProgress] = useState(0);
@@ -59,8 +59,14 @@ const TrackingLeg1 = () => {
     if (status === 'arrived') {
       const timeout = setTimeout(() => {
         nextLeg();
+        // Reset transit state for next leg
+        setTransitProgress(0);
+        setTransitEta(12);
+        setTransitRideStarted(false);
+        
         if (isNextLegTransit) {
-          navigate('/transit-ticket');
+          // Go to transit tracking page (not ticket page)
+          navigate('/tracking-leg2');
         } else if (tripState.selectedRoute && tripState.selectedRoute.legs.length > 1) {
           navigate('/tracking-leg2');
         } else {
@@ -69,7 +75,7 @@ const TrackingLeg1 = () => {
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [status, navigate, nextLeg, isNextLegTransit, tripState.selectedRoute]);
+  }, [status, navigate, nextLeg, isNextLegTransit, tripState.selectedRoute, setTransitProgress, setTransitEta, setTransitRideStarted]);
 
   const handleStartTrip = () => {
     setStatus('in_transit');

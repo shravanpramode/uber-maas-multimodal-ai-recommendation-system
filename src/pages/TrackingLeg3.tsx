@@ -9,14 +9,16 @@ type TrackingStatus = 'pickup_countdown' | 'ride_here' | 'in_transit' | 'arrived
 
 const TrackingLeg3 = () => {
   const navigate = useNavigate();
-  const { completeTrip, tripState, nextLeg } = useTrip();
+  const { completeTrip, tripState, nextLeg, setTransitProgress, setTransitEta, setTransitRideStarted } = useTrip();
   const [status, setStatus] = useState<TrackingStatus>('pickup_countdown');
   const [countdown, setCountdown] = useState(5);
   const [progress, setProgress] = useState(0);
   const totalTime = 8;
 
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[2];
+  const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
   const isLastLeg = !tripState.selectedRoute || tripState.currentLeg >= tripState.selectedRoute.legs.length - 1;
+  const isNextLegTransit = nextLegData && ['metro', 'bus', 'suburban-train'].includes(nextLegData.mode);
 
   // Phase 1: Pickup countdown (5 seconds)
   useEffect(() => {
@@ -66,7 +68,16 @@ const TrackingLeg3 = () => {
 
   const handleContinueToNextLeg = () => {
     nextLeg();
-    navigate('/tracking-leg1');
+    // Reset transit state for next leg
+    setTransitProgress(0);
+    setTransitEta(12);
+    setTransitRideStarted(false);
+    
+    if (isNextLegTransit) {
+      navigate('/tracking-leg2');
+    } else {
+      navigate('/tracking-leg1');
+    }
   };
 
   const pin = ['2', '5', '6', '1'];
