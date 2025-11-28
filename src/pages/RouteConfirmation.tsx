@@ -1,4 +1,4 @@
-import { X, ChevronDown, Car, Train, Bus, Footprints, Bike, Check } from "lucide-react";
+import { ArrowLeft, ChevronDown, Car, Train, Bus, Footprints, Bike, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip, Route, RouteLeg } from "@/contexts/TripContext";
@@ -32,8 +32,8 @@ const RouteConfirmation = () => {
   ];
 
   const sortOptions = [
-    { id: 'faster', label: 'Faster route' },
-    { id: 'affordable', label: 'Affordability' },
+    { id: 'faster', label: 'Fastest' },
+    { id: 'affordable', label: 'Cheapest' },
     { id: 'fewer-transfers', label: 'Fewer transfers' },
     { id: 'less-walking', label: 'Less walking' },
   ];
@@ -46,7 +46,7 @@ const RouteConfirmation = () => {
     const routes: Route[] = [
       {
         id: 'route-1',
-        tag: '⚡ Fastest',
+        tag: 'Fastest',
         totalPrice: 124,
         totalDuration: 32,
         distance: 26.6,
@@ -59,7 +59,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-2',
-        tag: '💰 Affordable',
+        tag: 'Cheapest',
         totalPrice: 45,
         totalDuration: 55,
         distance: 22.8,
@@ -73,7 +73,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-3',
-        tag: 'Hybrid',
+        tag: 'Balanced',
         totalPrice: 156,
         totalDuration: 38,
         distance: 24.2,
@@ -86,7 +86,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-4',
-        tag: 'Hybrid',
+        tag: 'Mixed',
         totalPrice: 98,
         totalDuration: 48,
         distance: 28.5,
@@ -100,7 +100,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-5',
-        tag: '🌟 Effortless',
+        tag: 'Premium',
         totalPrice: 189,
         totalDuration: 35,
         distance: 25.1,
@@ -113,7 +113,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-6',
-        tag: 'Hybrid',
+        tag: 'Budget',
         totalPrice: 67,
         totalDuration: 50,
         distance: 21.3,
@@ -126,7 +126,7 @@ const RouteConfirmation = () => {
       },
       ...(passengerCount > 4 ? [{
         id: 'route-7',
-        tag: '👥 Groups',
+        tag: 'Groups',
         totalPrice: 245,
         totalDuration: 30,
         distance: 24.8,
@@ -138,7 +138,7 @@ const RouteConfirmation = () => {
         ]
       }] : [{
         id: 'route-7',
-        tag: 'Fast & Cheap',
+        tag: 'Quick & Cheap',
         totalPrice: 89,
         totalDuration: 36,
         distance: 23.2,
@@ -151,7 +151,7 @@ const RouteConfirmation = () => {
       }]),
       {
         id: 'route-8',
-        tag: 'Hybrid',
+        tag: 'Scenic',
         totalPrice: 78,
         totalDuration: 58,
         distance: 30.2,
@@ -166,7 +166,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-9',
-        tag: '💰 Budget',
+        tag: 'Most Affordable',
         totalPrice: 38,
         totalDuration: 62,
         distance: 20.5,
@@ -179,7 +179,7 @@ const RouteConfirmation = () => {
       },
       {
         id: 'route-10',
-        tag: 'Hybrid',
+        tag: 'Rail Focus',
         totalPrice: 112,
         totalDuration: 42,
         distance: 27.8,
@@ -197,14 +197,12 @@ const RouteConfirmation = () => {
 
   const allRoutes = useMemo(() => generateRoutes(), [tripState.pickup, tripState.destination, tripState.passengerCount]);
 
-  // Filter routes based on selected modes
   const filteredRoutes = useMemo(() => {
     return allRoutes.filter(route => 
       route.legs.every(leg => selectedModes.includes(leg.mode))
     );
   }, [allRoutes, selectedModes]);
 
-  // Sort routes
   const sortedRoutes = useMemo(() => {
     const routes = [...filteredRoutes];
     switch (sortBy) {
@@ -230,24 +228,24 @@ const RouteConfirmation = () => {
     }
   }, [sortedRoutes]);
 
-  const getModeIcon = (mode: RouteLeg['mode']) => {
+  const getModeIcon = (mode: RouteLeg['mode'], size: string = "w-4 h-4") => {
     switch (mode) {
       case 'auto':
       case 'uber-go':
       case 'go-sedan':
       case 'uber-xl':
-        return <Car className="w-3 h-3" />;
+        return <Car className={size} />;
       case 'bike':
-        return <Bike className="w-3 h-3" />;
+        return <Bike className={size} />;
       case 'metro':
       case 'suburban-train':
-        return <Train className="w-3 h-3" />;
+        return <Train className={size} />;
       case 'bus':
-        return <Bus className="w-3 h-3" />;
+        return <Bus className={size} />;
       case 'walk':
-        return <Footprints className="w-3 h-3" />;
+        return <Footprints className={size} />;
       default:
-        return <Car className="w-3 h-3" />;
+        return <Car className={size} />;
     }
   };
 
@@ -285,148 +283,189 @@ const RouteConfirmation = () => {
 
   const getSortLabel = () => {
     const option = sortOptions.find(o => o.id === sortBy);
-    return option ? `By ${option.label.split(' ')[0]}` : 'Sort By';
+    return option?.label || 'Sort';
+  };
+
+  const getTagStyle = (tag: string) => {
+    if (tag === 'Fastest') return 'bg-foreground text-background';
+    if (tag === 'Cheapest' || tag === 'Most Affordable' || tag === 'Budget') return 'bg-accent text-accent-foreground';
+    if (tag === 'Premium') return 'bg-foreground/10 text-foreground';
+    return 'bg-secondary text-foreground/70';
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="flex items-center p-3 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-8 w-8">
-          <X className="w-4 h-4" />
-        </Button>
-      </div>
+      {/* Header - Uber style */}
+      <header className="sticky top-0 z-10 bg-background">
+        <div className="flex items-center h-14 px-4">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="w-10 h-10 flex items-center justify-center -ml-2 rounded-full hover:bg-secondary transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <h1 className="text-lg font-semibold ml-2">Choose a route</h1>
+        </div>
+      </header>
 
-      {/* Compact Route Summary */}
-      <div className="px-3 py-2 border-b border-border">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="w-1.5 h-1.5 bg-foreground rounded-full" />
-          <span className="font-medium truncate max-w-[40%]">{tripState.pickup?.name || "Connaught Place"}</span>
-          <span className="text-muted-foreground">→</span>
-          <span className="w-1.5 h-1.5 bg-foreground rounded-full" />
-          <span className="font-medium truncate max-w-[40%]">{tripState.destination?.name || "Sarojini Nagar"}</span>
+      {/* Route Summary - Uber style location display */}
+      <div className="px-4 pb-4">
+        <div className="flex items-start gap-3">
+          <div className="flex flex-col items-center pt-1">
+            <div className="w-2 h-2 bg-foreground rounded-full" />
+            <div className="w-0.5 h-8 bg-foreground/30 my-1" />
+            <div className="w-2 h-2 bg-foreground rounded-sm" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{tripState.pickup?.name || "Connaught Place"}</p>
+            <div className="h-6" />
+            <p className="text-sm font-medium truncate">{tripState.destination?.name || "Sarojini Nagar"}</p>
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="px-3 py-2 border-b border-border">
-        <div className="flex gap-2">
-          {/* Mode Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs rounded-full">
-                Mode <ChevronDown className="w-3 h-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40">
-              {allModes.map(mode => (
-                <DropdownMenuCheckboxItem
-                  key={mode.id}
-                  checked={selectedModes.includes(mode.id)}
-                  onCheckedChange={() => toggleMode(mode.id)}
-                  className="text-xs"
-                >
-                  {mode.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Sort Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs rounded-full">
-                {getSortLabel()} <ChevronDown className="w-3 h-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
-                {sortOptions.map(option => (
-                  <DropdownMenuRadioItem key={option.id} value={option.id} className="text-xs">
-                    {option.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Selected filters display */}
-        {selectedModes.length < allModes.length && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {selectedModes.map(mode => (
-              <span key={mode} className="text-[10px] bg-secondary px-1.5 py-0.5 rounded">
-                {allModes.find(m => m.id === mode)?.label}
-              </span>
+      {/* Filter Pills - Uber style */}
+      <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1.5 h-9 px-4 bg-secondary rounded-full text-sm font-medium whitespace-nowrap hover:bg-secondary/80 transition-colors">
+              Mode
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-44">
+            {allModes.map(mode => (
+              <DropdownMenuCheckboxItem
+                key={mode.id}
+                checked={selectedModes.includes(mode.id)}
+                onCheckedChange={() => toggleMode(mode.id)}
+                className="text-sm"
+              >
+                {mode.label}
+              </DropdownMenuCheckboxItem>
             ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1.5 h-9 px-4 bg-secondary rounded-full text-sm font-medium whitespace-nowrap hover:bg-secondary/80 transition-colors">
+              {getSortLabel()}
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
+              {sortOptions.map(option => (
+                <DropdownMenuRadioItem key={option.id} value={option.id} className="text-sm">
+                  {option.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {selectedModes.length < allModes.length && (
+          <button 
+            onClick={() => setSelectedModes(allModes.map(m => m.id))}
+            className="h-9 px-4 text-sm font-medium text-foreground/60 whitespace-nowrap"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-border" />
+
+      {/* Routes List - Uber style cards */}
+      <div className="flex-1 overflow-y-auto pb-24">
+        {sortedRoutes.map((route, index) => {
+          const isSelected = selectedRouteId === route.id;
+          
+          return (
+            <div 
+              key={route.id}
+              onClick={() => setSelectedRouteId(route.id)}
+              className={`relative cursor-pointer transition-colors ${
+                isSelected 
+                  ? 'bg-secondary' 
+                  : 'hover:bg-secondary/50'
+              }`}
+            >
+              {/* Selection indicator */}
+              {isSelected && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-foreground" />
+              )}
+              
+              <div className="px-4 py-4">
+                {/* Top row: Price and Duration */}
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold">₹{route.totalPrice}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getTagStyle(route.tag || '')}`}>
+                        {route.tag}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground/60 mt-0.5">
+                      {route.totalDuration} min · {route.distance} km
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">Arrive {route.eta}</p>
+                  </div>
+                </div>
+
+                {/* Journey timeline */}
+                <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                  {route.legs.map((leg, idx) => (
+                    <div key={idx} className="flex items-center">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-background rounded-lg border border-border">
+                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                          {getModeIcon(leg.mode, "w-3.5 h-3.5")}
+                        </div>
+                        <div className="text-xs">
+                          <span className="font-medium">{leg.duration}m</span>
+                          {leg.price ? (
+                            <span className="text-foreground/60 ml-1">₹{leg.price}</span>
+                          ) : leg.distance ? (
+                            <span className="text-foreground/60 ml-1">
+                              {leg.distance >= 1000 ? (leg.distance/1000).toFixed(1) + 'km' : leg.distance + 'm'}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      {idx < route.legs.length - 1 && (
+                        <div className="w-4 h-px bg-border mx-0.5" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Divider between cards */}
+              <div className="h-px bg-border mx-4" />
+            </div>
+          );
+        })}
+
+        {sortedRoutes.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <p className="text-lg font-medium text-foreground/60">No routes found</p>
+            <p className="text-sm text-foreground/40 mt-1">Try adjusting your filters</p>
           </div>
         )}
       </div>
 
-      {/* Routes List */}
-      <div className="flex-1 overflow-y-auto pb-20">
-        {sortedRoutes.map((route) => (
-          <div 
-            key={route.id}
-            onClick={() => setSelectedRouteId(route.id)}
-            className={`border-b border-border p-3 cursor-pointer transition-all ${
-              selectedRouteId === route.id 
-                ? 'border-2 border-foreground bg-accent/50' 
-                : 'hover:bg-accent/30'
-            }`}
-          >
-            {/* Route Header */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{route.distance} km</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  route.tag?.includes('Fastest') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' :
-                  route.tag?.includes('Affordable') || route.tag?.includes('Budget') ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
-                  route.tag?.includes('Effortless') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' :
-                  route.tag?.includes('Groups') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
-                  'bg-secondary text-muted-foreground'
-                }`}>
-                  {route.tag}
-                </span>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-sm">₹{route.totalPrice}</p>
-                <p className="text-[10px] text-muted-foreground">{route.eta}</p>
-              </div>
-            </div>
-
-            {/* Legs Preview - Compact */}
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {route.legs.map((leg, idx) => (
-                <div key={idx} className="flex items-center">
-                  <div className="flex flex-col items-center min-w-[44px] p-1.5 bg-secondary rounded-lg">
-                    <div className="w-5 h-5 rounded bg-background flex items-center justify-center mb-0.5">
-                      {getModeIcon(leg.mode)}
-                    </div>
-                    <p className="text-[9px] text-muted-foreground">{getModeName(leg.mode)}</p>
-                    <p className="text-[10px] font-medium">{leg.duration}m</p>
-                    <p className="text-[9px] text-muted-foreground">
-                      {leg.price ? `₹${leg.price}` : leg.distance ? `${leg.distance >= 1000 ? (leg.distance/1000).toFixed(1) + 'km' : leg.distance + 'm'}` : ''}
-                    </p>
-                  </div>
-                  {idx < route.legs.length - 1 && (
-                    <span className="text-muted-foreground mx-0.5 text-[10px]">›</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-3">
+      {/* Bottom CTA - Uber style */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
         <Button 
           onClick={handleConfirmTrip}
           disabled={!selectedRouteId}
-          className="w-full h-11 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90"
+          className="w-full h-12 text-base font-semibold rounded-lg"
         >
-          Confirm Trip
+          Confirm route
         </Button>
       </div>
     </div>
