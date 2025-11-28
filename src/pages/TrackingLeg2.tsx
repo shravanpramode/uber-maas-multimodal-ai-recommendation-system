@@ -1,4 +1,4 @@
-import { X, User } from "lucide-react";
+import { X, User, Ticket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
@@ -7,10 +7,10 @@ import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 
 const TrackingLeg2 = () => {
   const navigate = useNavigate();
-  const { nextLeg, tripState } = useTrip();
+  const { nextLeg, tripState, setTransitExitMode } = useTrip();
   const [eta, setEta] = useState(12);
   const [progress, setProgress] = useState(0);
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
   const totalTime = 12;
 
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[1];
@@ -68,23 +68,24 @@ const TrackingLeg2 = () => {
         const newEta = prev - 0.5;
         setProgress(((totalTime - newEta) / totalTime) * 100);
         
+        // Show prebooked banner only when 5 mins or less remaining
+        if (newEta <= 5 && nextLeg3 && !['walk'].includes(nextLeg3.mode)) {
+          setShowBanner(true);
+        }
+        
         if (newEta <= 0) {
           clearInterval(interval);
           nextLeg();
-          if (isNextLegTransit) {
-            navigate('/transit-ticket');
-          } else if (hasMoreLegs) {
-            navigate('/tracking-leg3');
-          } else {
-            navigate('/trip-complete');
-          }
+          // Navigate to transit-ticket with exit mode
+          setTransitExitMode(true);
+          navigate('/transit-ticket');
           return 0;
         }
         return newEta;
       });
     }, 2000);
     return () => clearInterval(interval);
-  }, [navigate, nextLeg, isNextLegTransit, hasMoreLegs]);
+  }, [navigate, nextLeg, nextLeg3, setTransitExitMode]);
 
   const getTransitIcon = () => {
     switch (currentLeg?.mode) {
@@ -104,9 +105,13 @@ const TrackingLeg2 = () => {
     }
   };
 
+  const handleViewTicket = () => {
+    navigate('/transit-ticket');
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Pre-booking Banner */}
+      {/* Pre-booking Banner - Only show when 5 mins or less */}
       {showBanner && nextLeg3 && !['walk'].includes(nextLeg3.mode) && (
         <div className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -142,7 +147,7 @@ const TrackingLeg2 = () => {
       </div>
 
       {/* Map Area */}
-      <div className="relative h-[28vh] bg-secondary">
+      <div className="relative h-[26vh] bg-secondary">
         <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
           {getTransitIcon()}
         </div>
@@ -155,11 +160,11 @@ const TrackingLeg2 = () => {
 
       {/* Bottom Card */}
       <div className="flex-1 bg-card rounded-t-2xl -mt-4 relative z-10 flex flex-col">
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-3" />
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-2" />
         
         <div className="px-4 flex-1">
           {/* Current & Next Station */}
-          <div className="bg-secondary rounded-xl p-3 mb-3">
+          <div className="bg-secondary rounded-xl p-3 mb-2">
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Current</p>
@@ -181,11 +186,21 @@ const TrackingLeg2 = () => {
           <p className="text-[10px] text-muted-foreground mb-0.5">
             Leg {tripState.currentLeg + 1} of {tripState.selectedRoute?.legs.length || 3} • {getTransitName()}
           </p>
-          <h2 className="text-xl font-bold mb-3">{currentLeg?.to || "Destination Station"}</h2>
+          <h2 className="text-lg font-bold mb-2">{currentLeg?.to || "Destination Station"}</h2>
+
+          {/* View Ticket Button */}
+          <Button 
+            variant="outline" 
+            onClick={handleViewTicket}
+            className="w-full mb-2 h-9 rounded-xl text-xs font-medium"
+          >
+            <Ticket className="w-3.5 h-3.5 mr-1.5" />
+            View Ticket
+          </Button>
 
           {/* Transit Details */}
-          <div className="border border-border rounded-xl p-3 mb-3">
-            <div className="space-y-2">
+          <div className="border border-border rounded-xl p-3 mb-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Line</span>
                 <span className="font-bold text-sm">{currentLeg?.lineInfo || "Yellow Line"}</span>
@@ -202,12 +217,12 @@ const TrackingLeg2 = () => {
           </div>
 
           {/* Next Driver Card (if applicable) */}
-          {nextLeg3 && ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLeg3.mode) && (
+          {nextLeg3 && ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLeg3.mode) && showBanner && (
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
               <p className="text-xs font-bold mb-2 text-blue-900 dark:text-blue-100">Next Driver Waiting:</p>
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-sm">Amit Sharma</p>
@@ -218,7 +233,6 @@ const TrackingLeg2 = () => {
                   <p className="text-xs font-medium">DL-2B-CD-5678</p>
                 </div>
               </div>
-              <p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-2">✓ Waiting at Gate 2</p>
             </div>
           )}
         </div>

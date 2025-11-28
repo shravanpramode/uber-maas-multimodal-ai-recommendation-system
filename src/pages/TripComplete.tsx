@@ -1,87 +1,133 @@
 import { useNavigate } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Star, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useTrip } from "@/contexts/TripContext";
 import { useState } from "react";
 
 const TripComplete = () => {
   const navigate = useNavigate();
-  const { tripState, completeTrip } = useTrip();
+  const { tripState } = useTrip();
   const [rating, setRating] = useState(0);
+  const [showLegRatings, setShowLegRatings] = useState(false);
+  const [legRatings, setLegRatings] = useState<Record<number, number>>({});
+  const [showUpiPopup, setShowUpiPopup] = useState(false);
 
-  const handlePayment = () => {
-    navigate('/payment', { 
+  const totalCost = tripState.selectedRoute?.totalPrice || 95;
+
+  const handleContinueToPayment = () => {
+    navigate('/payment-selection', { 
       state: { 
-        totalCost: tripState.selectedRoute?.totalPrice || 95,
+        totalCost,
         tripId: tripState.tripId 
       } 
     });
   };
 
-  const handleResetTrip = () => {
-    completeTrip();
-    navigate("/");
+  const handleRating = (star: number) => {
+    setRating(star);
+    setShowLegRatings(true);
   };
 
+  const handleLegRating = (legIndex: number, star: number) => {
+    setLegRatings(prev => ({ ...prev, [legIndex]: star }));
+  };
+
+  const getModeIcon = (mode: string) => {
+    switch (mode) {
+      case 'auto': return '🛺';
+      case 'bike': return '🏍️';
+      case 'uber-go': return '🚗';
+      case 'go-sedan': return '🚙';
+      case 'uber-xl': return '🚐';
+      case 'metro': return '🚇';
+      case 'bus': return '🚌';
+      case 'suburban-train': return '🚆';
+      case 'walk': return '🚶';
+      default: return '🚗';
+    }
+  };
+
+  const getModeName = (mode: string) => {
+    switch (mode) {
+      case 'auto': return 'Auto';
+      case 'bike': return 'Bike';
+      case 'uber-go': return 'Uber Go';
+      case 'go-sedan': return 'Go Sedan';
+      case 'uber-xl': return 'Uber XL';
+      case 'metro': return 'Metro';
+      case 'bus': return 'Bus';
+      case 'suburban-train': return 'Train';
+      case 'walk': return 'Walk';
+      default: return mode;
+    }
+  };
+
+  const rideLegs = tripState.selectedRoute?.legs.filter(leg => 
+    ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(leg.mode)
+  ) || [];
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Success Animation */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-24 h-24 rounded-full bg-success/20 flex items-center justify-center mb-4">
-            <div className="text-5xl">✅</div>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Compact Header */}
+      <div className="flex flex-col items-center pt-4 pb-3 px-4">
+        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-2">
+          <span className="text-2xl">✓</span>
+        </div>
+        <h1 className="text-lg font-bold">Trip Complete!</h1>
+        <p className="text-xs text-muted-foreground">Hope you enjoyed your journey</p>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-auto px-4 pb-24">
+        {/* Trip Summary Card */}
+        <div className="border border-border rounded-xl p-3 mb-3">
+          <div className="flex justify-between items-center pb-2 border-b border-border mb-2">
+            <span className="text-sm text-muted-foreground">Total Fare</span>
+            <span className="text-xl font-bold">₹{totalCost}</span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Trip Complete!</h1>
-          <p className="text-muted-foreground">Hope you enjoyed your journey</p>
+          
+          {/* Leg Breakdown */}
+          <div className="space-y-2">
+            {tripState.selectedRoute?.legs.map((leg, i) => (
+              <div key={i} className="flex justify-between items-start text-xs">
+                <div className="flex-1">
+                  <div className="flex items-center gap-1">
+                    <span>{getModeIcon(leg.mode)}</span>
+                    <span className="font-medium">{getModeName(leg.mode)}</span>
+                    <span className="text-muted-foreground">• {leg.duration} min</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground ml-5">{leg.from} → {leg.to}</p>
+                </div>
+                <span className="font-medium">
+                  {leg.mode === 'walk' ? `${leg.distance || 0}m` : `₹${leg.price || 0}`}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {tripState.selectedRoute?.savings && (
+            <div className="mt-2 pt-2 border-t border-border flex justify-between text-xs text-green-600">
+              <span className="font-medium">You saved</span>
+              <span className="font-bold">₹{tripState.selectedRoute.savings}</span>
+            </div>
+          )}
         </div>
 
-        {/* Trip Summary */}
-        <Card className="p-6 mb-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center pb-4 border-b border-border">
-              <span className="text-muted-foreground">Total Fare</span>
-              <span className="text-3xl font-bold">₹{tripState.selectedRoute?.totalPrice}</span>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Base Fare</span>
-                <span className="font-semibold">₹120.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Metro Ticket</span>
-                <span className="font-semibold">₹28.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Last Leg</span>
-                <span className="font-semibold">₹76.30</span>
-              </div>
-              {tripState.selectedRoute?.savings && (
-                <div className="flex justify-between text-success">
-                  <span className="font-semibold">Savings</span>
-                  <span className="font-semibold">-₹{tripState.selectedRoute.savings}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* Rate Your Experience */}
-        <Card className="p-6 mb-6">
-          <h2 className="text-lg font-bold mb-4">Rate your experience</h2>
+        {/* Rate Experience Card */}
+        <div className="border border-border rounded-xl p-3 mb-3">
+          <h2 className="text-sm font-bold mb-2">Rate your experience</h2>
           
-          <div className="flex justify-center gap-4 mb-4">
+          <div className="flex justify-center gap-2 mb-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
-                onClick={() => setRating(star)}
+                onClick={() => handleRating(star)}
                 className="transition-transform hover:scale-110"
               >
                 <Star
-                  className={`w-10 h-10 ${
+                  className={`w-7 h-7 ${
                     star <= rating
-                      ? "fill-accent text-accent"
+                      ? "fill-yellow-400 text-yellow-400"
                       : "text-muted-foreground"
                   }`}
                 />
@@ -90,58 +136,100 @@ const TripComplete = () => {
           </div>
           
           {rating > 0 && (
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-[10px] text-muted-foreground mb-2">
               {rating === 5 && "Excellent! We're glad you had a great trip!"}
               {rating === 4 && "Great! Thanks for your feedback!"}
               {rating === 3 && "Good! We'll keep improving!"}
-              {rating < 3 && "We're sorry. We'll do better next time!"}
+              {rating < 3 && "We're sorry. We'll do better!"}
             </p>
           )}
-        </Card>
 
-        {/* Payment Method */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-semibold">Payment Method</span>
-            <Button variant="ghost" size="sm">Change</Button>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
-              <span className="text-2xl">💳</span>
+          {/* Expandable Leg-wise Rating */}
+          {rating > 0 && rideLegs.length > 0 && (
+            <div className="border-t border-border pt-2">
+              <button 
+                onClick={() => setShowLegRatings(!showLegRatings)}
+                className="flex items-center justify-between w-full text-xs"
+              >
+                <span className="text-muted-foreground">Rate individual rides</span>
+                {showLegRatings ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              
+              {showLegRatings && (
+                <div className="mt-2 space-y-2">
+                  {rideLegs.map((leg, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-xs">
+                        {getModeIcon(leg.mode)} {getModeName(leg.mode)}
+                      </span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map(s => (
+                          <button key={s} onClick={() => handleLegRating(i, s)}>
+                            <Star 
+                              className={`w-4 h-4 ${
+                                s <= (legRatings[i] || 0) 
+                                  ? 'fill-yellow-400 text-yellow-400' 
+                                  : 'text-muted-foreground'
+                              }`} 
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
-              <p className="font-semibold">UPI Scan and Pay</p>
-              <p className="text-sm text-muted-foreground">{tripState.paymentMethod}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button onClick={handlePayment} className="w-full h-14 text-lg font-bold">
-            Pay ₹{tripState.selectedRoute?.totalPrice}
-          </Button>
-          
-          <Button onClick={handleResetTrip} variant="outline" className="w-full">
-            Back to Home
-          </Button>
+          )}
         </div>
+
+        {/* UPI Payment Card */}
+        <button 
+          onClick={() => setShowUpiPopup(true)}
+          className="w-full border border-border rounded-xl p-3 mb-3 flex items-center"
+        >
+          <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mr-3">
+            <span className="text-green-600 dark:text-green-400 font-bold text-sm">₹</span>
+          </div>
+          <span className="flex-1 text-left text-sm">UPI</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
 
         {/* Eco Impact */}
         {tripState.selectedRoute?.carbonSaved && (
-          <Card className="mt-6 p-4 bg-success/10 border-success">
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">🌱</div>
-              <div>
-                <p className="font-semibold text-success">Eco-Friendly Choice!</p>
-                <p className="text-sm text-muted-foreground">
-                  You saved {tripState.selectedRoute.carbonSaved}kg CO₂ by choosing multimodal
-                </p>
-              </div>
+          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl p-2 flex items-center gap-2">
+            <span className="text-xl">🌱</span>
+            <div>
+              <p className="font-medium text-xs text-green-700 dark:text-green-300">Eco-Friendly!</p>
+              <p className="text-[10px] text-muted-foreground">
+                Saved {tripState.selectedRoute.carbonSaved}kg CO₂
+              </p>
             </div>
-          </Card>
+          </div>
         )}
       </div>
+
+      {/* Fixed Bottom Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border">
+        <Button onClick={handleContinueToPayment} className="w-full h-11 text-sm font-bold">
+          Continue to payment
+        </Button>
+      </div>
+
+      {/* UPI Popup */}
+      {showUpiPopup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end z-50" onClick={() => setShowUpiPopup(false)}>
+          <div className="bg-card/95 backdrop-blur-xl w-full rounded-t-3xl p-4" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+            <p className="text-center text-sm mb-4">
+              All your multimodal journey payments, unified seamlessly through UPI
+            </p>
+            <Button onClick={() => setShowUpiPopup(false)} className="w-full">
+              Got it
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

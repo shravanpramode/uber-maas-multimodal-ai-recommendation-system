@@ -7,40 +7,66 @@ import { useMemo } from "react";
 
 const TransitTicket = () => {
   const navigate = useNavigate();
-  const { tripState, setTransitTicketConfirmed } = useTrip();
+  const { tripState, setTransitTicketConfirmed, transitExitMode, setTransitExitMode, nextLeg } = useTrip();
   
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg];
+  const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
+  const hasMoreLegs = tripState.selectedRoute && tripState.currentLeg < tripState.selectedRoute.legs.length - 1;
+  const isNextLegBike = nextLegData?.mode === 'bike';
+  const isNextLegTransit = nextLegData && ['metro', 'bus', 'suburban-train'].includes(nextLegData.mode);
+  
   const ticketNumber = useMemo(() => `2117999943${Date.now().toString().slice(-9)}`, []);
   
   // Generate stable QR pattern
   const qrPattern = useMemo(() => {
     const pattern: boolean[] = [];
-    // Use ticket number as seed for deterministic pattern
     for (let i = 0; i < 64; i++) {
       pattern.push(((i * 17 + 11) % 7) > 2);
     }
     return pattern;
   }, []);
 
-  const getTransitType = () => {
+  const getStationType = () => {
     switch (currentLeg?.mode) {
-      case 'metro': return 'Metro';
-      case 'bus': return 'Bus';
-      case 'suburban-train': return 'Suburban Train';
-      default: return 'Transit';
+      case 'metro': return 'metro station';
+      case 'bus': return 'bus stop';
+      case 'suburban-train': return 'train station';
+      default: return 'station';
     }
   };
 
-  const handleStartRide = () => {
-    setTransitTicketConfirmed(true);
-    navigate('/tracking-leg2');
+  const handleButtonClick = () => {
+    if (transitExitMode) {
+      // Scan & Exit mode - navigate to next leg or complete
+      setTransitExitMode(false);
+      if (hasMoreLegs) {
+        if (isNextLegTransit) {
+          navigate('/transit-ticket');
+        } else {
+          navigate('/tracking-leg3');
+        }
+      } else {
+        navigate('/trip-complete');
+      }
+    } else {
+      // Normal Start Ride mode
+      setTransitTicketConfirmed(true);
+      navigate('/tracking-leg2');
+    }
+  };
+
+  const handleBack = () => {
+    if (transitExitMode) {
+      setTransitExitMode(false);
+    }
+    navigate(-1);
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="h-9 w-9">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="h-9 w-9">
           <X className="w-4 h-4" />
         </Button>
         <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -62,7 +88,7 @@ const TransitTicket = () => {
 
         {/* Progress indicator */}
         <div className="mb-6">
-          <Progress value={30} className="h-1" />
+          <Progress value={transitExitMode ? 100 : 30} className="h-1" />
         </div>
 
         {/* QR Code */}
@@ -83,20 +109,19 @@ const TransitTicket = () => {
           <div className="w-1.5 h-1.5 rounded-full bg-foreground mt-2" />
         </div>
 
-        {/* Promo Card */}
-        <div className="bg-secondary rounded-xl p-3 flex items-center gap-3 mb-4">
-          <div className="flex-1">
-            <p className="text-xs font-medium mb-1">
-              Get a discounted bike ride to/from {getTransitType().toLowerCase()} station
-            </p>
-            <Button variant="link" className="p-0 h-auto text-primary font-semibold text-xs">
-              Book Bike →
-            </Button>
+        {/* Bike Promo Card - Only show if next leg is bike */}
+        {isNextLegBike && (
+          <div className="bg-secondary rounded-xl p-3 flex items-center gap-3 mb-4">
+            <div className="flex-1">
+              <p className="text-xs font-medium">
+                Enjoy discounted bike ride to/from {getStationType()}
+              </p>
+            </div>
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Bike className="w-5 h-5 text-primary" />
+            </div>
           </div>
-          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-            <Bike className="w-5 h-5 text-primary" />
-          </div>
-        </div>
+        )}
 
         {/* ONDC Badge */}
         <div className="text-center py-3 border-t border-border">
@@ -109,10 +134,10 @@ const TransitTicket = () => {
       {/* Bottom CTA */}
       <div className="p-4 border-t border-border">
         <Button 
-          onClick={handleStartRide} 
+          onClick={handleButtonClick} 
           className="w-full h-11 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90"
         >
-          Start Ride
+          {transitExitMode ? 'Scan & Exit' : 'Start Ride'}
         </Button>
       </div>
     </div>

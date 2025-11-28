@@ -17,6 +17,7 @@ import TrackingLeg3 from "./pages/TrackingLeg3";
 import TransitTicket from "./pages/TransitTicket";
 import LiveTracking from "./pages/LiveTracking";
 import TripComplete from "./pages/TripComplete";
+import PaymentSelection from "./pages/PaymentSelection";
 import PaymentFlow from "./pages/PaymentFlow";
 import Receipt from "./pages/Receipt";
 import NotFound from "./pages/NotFound";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/trip-search" element={<TripSearch />} />
             <Route path="/live-tracking" element={<LiveTracking />} />
             <Route path="/trip-complete" element={<TripComplete />} />
+            <Route path="/payment-selection" element={<PaymentSelection />} />
             <Route path="/payment" element={<PaymentFlow />} />
             <Route path="/receipt" element={<Receipt />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
