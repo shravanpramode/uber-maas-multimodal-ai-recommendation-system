@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
-import { ArrowLeft, Download, Briefcase, Mail, HelpCircle } from "lucide-react";
+import { ArrowLeft, Download, Briefcase, Mail, HelpCircle, Users } from "lucide-react";
 
 const Receipt = () => {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ const Receipt = () => {
   const { resetTrip, tripState } = useTrip();
   const totalCost = location.state?.totalCost || tripState.selectedRoute?.totalPrice || 95;
   const method = location.state?.method || 'gpay';
+  const passengerCount = tripState.passengerCount || 1;
 
   const handleBackHome = () => {
     resetTrip();
@@ -40,6 +41,10 @@ const Receipt = () => {
     }
   };
 
+  const isTransitMode = (mode: string) => {
+    return ['metro', 'bus', 'suburban-train'].includes(mode);
+  };
+
   const gstAmount = (totalCost * 0.18).toFixed(2);
   const savings = tripState.selectedRoute?.savings || 45;
 
@@ -68,13 +73,20 @@ const Receipt = () => {
           <span className="text-lg font-bold">₹{totalCost}</span>
         </div>
 
-        {/* Pickup & Destination */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-          <span className="w-2 h-2 bg-foreground rounded-full" />
-          <span className="truncate">{tripState.pickup?.name || 'Gurgaon Cyber Hub'}</span>
-          <span>→</span>
-          <span className="w-2 h-2 bg-foreground rounded-full" />
-          <span className="truncate">{tripState.destination?.name || 'Connaught Place'}</span>
+        {/* Pickup & Destination with Passenger Count */}
+        <div className="mb-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="w-2 h-2 bg-foreground rounded-full" />
+            <span className="truncate">{tripState.pickup?.name || 'Gurgaon Cyber Hub'}</span>
+            <span>→</span>
+            <span className="w-2 h-2 bg-foreground rounded-full" />
+            <span className="truncate">{tripState.destination?.name || 'Connaught Place'}</span>
+          </div>
+          {/* Passenger count */}
+          <div className="flex items-center gap-1 mt-1 text-xs text-foreground/60">
+            <Users className="w-3 h-3" />
+            <span>{passengerCount} passenger{passengerCount > 1 ? 's' : ''}</span>
+          </div>
         </div>
         
         {/* Trip Charge with Leg Breakdown */}
@@ -86,8 +98,20 @@ const Receipt = () => {
           <div className="space-y-1.5 ml-2">
             {tripState.selectedRoute?.legs.map((leg, i) => (
               <div key={i} className="flex justify-between text-xs text-foreground/60">
-                <span>{getModeIcon(leg.mode)} {leg.from} → {leg.to}</span>
-                <span>{leg.mode === 'walk' ? `${leg.distance || 0}m` : `₹${leg.price || 0}`}</span>
+                <span className="flex items-center gap-1">
+                  {getModeIcon(leg.mode)} {leg.from} → {leg.to}
+                  {isTransitMode(leg.mode) && passengerCount > 1 && (
+                    <span className="flex items-center gap-0.5 ml-1">
+                      <Users className="w-2.5 h-2.5" />×{passengerCount}
+                    </span>
+                  )}
+                </span>
+                <span>
+                  {leg.mode === 'walk' 
+                    ? `${leg.distance || 0}m` 
+                    : `₹${isTransitMode(leg.mode) ? (leg.price || 0) * passengerCount : leg.price || 0}`
+                  }
+                </span>
               </div>
             )) || (
               <>

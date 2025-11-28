@@ -1,4 +1,4 @@
-import { X, User, Ticket } from "lucide-react";
+import { X, User, Ticket, Play, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
@@ -7,16 +7,18 @@ import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 
 const TrackingLeg2 = () => {
   const navigate = useNavigate();
-  const { tripState, setTransitExitMode, setTransitProgress, setTransitEta } = useTrip();
+  const { tripState, setTransitExitMode, setTransitProgress, setTransitEta, setTransitRideStarted } = useTrip();
   
   // Use context state for persistence
   const eta = tripState.transitEta;
   const progress = tripState.transitProgress;
   const totalTime = 12;
+  const rideStarted = tripState.transitRideStarted;
 
   const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[1];
   const nextLeg3 = tripState.selectedRoute?.legs[tripState.currentLeg + 1] || tripState.selectedRoute?.legs[2];
-  const showBanner = eta <= 5 && nextLeg3 && !['walk'].includes(nextLeg3.mode);
+  const showBanner = eta <= 5 && nextLeg3 && !['walk'].includes(nextLeg3.mode) && rideStarted;
+  const passengerCount = tripState.passengerCount || 1;
 
   // Generate stations based on transit type
   const stations = useMemo(() => {
@@ -62,9 +64,12 @@ const TrackingLeg2 = () => {
     };
   }, [progress, stations]);
 
+  // Only run progress when ride is started
   useEffect(() => {
+    if (!rideStarted) return;
+    
     const interval = setInterval(() => {
-      const newEta = eta - 0.75; // 1.5x faster
+      const newEta = eta - 0.75;
       const newProgress = ((totalTime - newEta) / totalTime) * 100;
       
       setTransitEta(Math.max(0, newEta));
@@ -72,13 +77,12 @@ const TrackingLeg2 = () => {
       
       if (newEta <= 0) {
         clearInterval(interval);
-        // DON'T call nextLeg() here - do it in TransitTicket after Scan & Exit
         setTransitExitMode(true);
         navigate('/transit-ticket');
       }
-    }, 1300); // Faster interval
+    }, 1300);
     return () => clearInterval(interval);
-  }, [navigate, setTransitExitMode, eta, setTransitEta, setTransitProgress]);
+  }, [navigate, setTransitExitMode, eta, setTransitEta, setTransitProgress, rideStarted]);
 
   const getTransitIcon = () => {
     switch (currentLeg?.mode) {
@@ -99,16 +103,20 @@ const TrackingLeg2 = () => {
   };
 
   const handleViewTicket = () => {
-    navigate('/transit-ticket');
+    navigate('/transit-ticket?viewMode=true');
+  };
+
+  const handleStartRide = () => {
+    setTransitRideStarted(true);
   };
 
   const handleCloseBanner = () => {
-    // Just visual close, doesn't affect showBanner logic
+    // Just visual close
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Pre-booking Banner - Only show when 5 mins or less */}
+      {/* Pre-booking Banner - Only show when 5 mins or less and ride started */}
       {showBanner && (
         <div className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -135,12 +143,21 @@ const TrackingLeg2 = () => {
           <div className="flex items-center gap-2">
             <span className="text-xl">{getTransitIcon()}</span>
             <div>
-              <p className="text-base font-bold">On {getTransitName()}</p>
-              <p className="text-xs text-background/80">{Math.ceil(eta)} mins to {currentLeg?.to}</p>
+              <p className="text-base font-bold">
+                {rideStarted ? `On ${getTransitName()}` : `Board ${getTransitName()}`}
+              </p>
+              <p className="text-xs text-background/80">
+                {rideStarted ? `${Math.ceil(eta)} mins to ${currentLeg?.to}` : `Ready to start`}
+              </p>
             </div>
           </div>
+          {/* Passenger count badge */}
+          <div className="flex items-center gap-1 bg-background/20 px-2 py-1 rounded-full">
+            <Users className="w-3 h-3" />
+            <span className="text-xs font-medium">{passengerCount}</span>
+          </div>
         </div>
-        <AnimatedProgressBar progress={progress} mode={currentLeg?.mode || 'metro'} />
+        <AnimatedProgressBar progress={rideStarted ? progress : 0} mode={currentLeg?.mode || 'metro'} />
       </div>
 
       {/* Map Area */}
@@ -159,26 +176,28 @@ const TrackingLeg2 = () => {
       <div className="flex-1 bg-card rounded-t-2xl -mt-4 relative z-10 flex flex-col">
         <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-2" />
         
-        <div className="px-4 flex-1">
-          {/* Current & Next Station */}
-          <div className="bg-secondary rounded-xl p-3 mb-2">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-xs text-foreground/60 uppercase tracking-wide">Current</p>
-                <p className="font-bold text-sm">{currentStation}</p>
+        <div className="px-4 flex-1 pb-24">
+          {/* Current & Next Station - only show when started */}
+          {rideStarted && (
+            <div className="bg-secondary rounded-xl p-3 mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-xs text-foreground/60 uppercase tracking-wide">Current</p>
+                  <p className="font-bold text-sm">{currentStation}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-foreground/60 uppercase tracking-wide">Next</p>
+                  <p className="font-bold text-sm text-primary">{nextStation}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-foreground/60 uppercase tracking-wide">Next</p>
-                <p className="font-bold text-sm text-primary">{nextStation}</p>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-500" 
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary transition-all duration-500" 
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+          )}
 
           <p className="text-xs text-foreground/60 mb-0.5">
             Leg {tripState.currentLeg + 1} of {tripState.selectedRoute?.legs.length || 3} • {getTransitName()}
@@ -207,9 +226,15 @@ const TrackingLeg2 = () => {
                 <span className="font-bold text-sm">{currentLeg?.to}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-foreground/60">Arriving in</span>
-                <span className="font-bold text-sm">{Math.ceil(eta)} mins</span>
+                <span className="text-xs text-foreground/60">Fare</span>
+                <span className="font-bold text-sm">₹{(currentLeg?.price || 30) * passengerCount}</span>
               </div>
+              {rideStarted && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-foreground/60">Arriving in</span>
+                  <span className="font-bold text-sm">{Math.ceil(eta)} mins</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -233,6 +258,19 @@ const TrackingLeg2 = () => {
             </div>
           )}
         </div>
+
+        {/* Fixed Bottom Start Ride Button - only show when not started */}
+        {!rideStarted && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border">
+            <Button 
+              onClick={handleStartRide}
+              className="w-full h-11 bg-foreground text-background hover:bg-foreground/90 font-bold text-sm rounded-xl"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Ride
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

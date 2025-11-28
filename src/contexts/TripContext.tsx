@@ -46,6 +46,7 @@ interface TripState {
   transitTicketConfirmed: boolean;
   transitProgress: number;
   transitEta: number;
+  transitRideStarted: boolean;
 }
 
 interface TripContextType {
@@ -64,6 +65,7 @@ interface TripContextType {
   setTransitTicketConfirmed: (confirmed: boolean) => void;
   setTransitProgress: (progress: number) => void;
   setTransitEta: (eta: number) => void;
+  setTransitRideStarted: (started: boolean) => void;
   completeTrip: () => void;
   resetTrip: () => void;
 }
@@ -85,6 +87,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     transitTicketConfirmed: false,
     transitProgress: 0,
     transitEta: 12,
+    transitRideStarted: false,
   });
 
   const [transitExitMode, setTransitExitMode] = useState(false);
@@ -107,11 +110,11 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
 
   const startTrip = () => {
     const tripId = `TRIP-${Date.now()}`;
-    setTripState(prev => ({ ...prev, tripId, currentLeg: 0, transitTicketConfirmed: false }));
+    setTripState(prev => ({ ...prev, tripId, currentLeg: 0, transitTicketConfirmed: false, transitRideStarted: false }));
   };
 
   const nextLeg = () => {
-    setTripState(prev => ({ ...prev, currentLeg: prev.currentLeg + 1, transitTicketConfirmed: false }));
+    setTripState(prev => ({ ...prev, currentLeg: prev.currentLeg + 1, transitTicketConfirmed: false, transitRideStarted: false }));
   };
 
   const setMetroTicket = (ticketId: string) => {
@@ -138,6 +141,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTripState(prev => ({ ...prev, transitEta: eta }));
   };
 
+  const setTransitRideStarted = (started: boolean) => {
+    setTripState(prev => ({ ...prev, transitRideStarted: started }));
+  };
+
   const completeTrip = () => {
     setTripState(prev => ({ ...prev, tripId: null }));
   };
@@ -157,6 +164,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       transitTicketConfirmed: false,
       transitProgress: 0,
       transitEta: 12,
+      transitRideStarted: false,
     });
     setTransitExitMode(false);
   };
@@ -179,6 +187,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         setTransitTicketConfirmed,
         setTransitProgress,
         setTransitEta,
+        setTransitRideStarted,
         completeTrip,
         resetTrip,
       }}
