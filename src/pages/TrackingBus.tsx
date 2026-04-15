@@ -1,9 +1,10 @@
-import { X, User, Ticket, Play, Users, CheckCircle } from "lucide-react";
+import { X, User, Ticket, Play, Users, CheckCircle, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { useEffect, useMemo, useState } from "react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
+import GoogleMapView from "@/components/Map/GoogleMapView";
 
 type BusStatus = 'ready' | 'riding' | 'arrived';
 
@@ -14,11 +15,14 @@ const TrackingBus = () => {
   const [status, setStatus] = useState<BusStatus>('ready');
   const [eta, setEta] = useState(12);
   const [progress, setProgress] = useState(0);
+  const [isMapExpanded, setIsMapExpanded] = useState(true);
   const totalTime = 12;
 
-  const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[0];
-  const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
-  const isLastLeg = !tripState.selectedRoute || tripState.currentLeg >= tripState.selectedRoute.legs.length - 1;
+  const currentLegIndex = tripState.currentLeg;
+  const currentLeg = tripState.selectedRoute?.legs[currentLegIndex] || tripState.selectedRoute?.legs[0];
+  const nextLegIndex = currentLegIndex + 1;
+  const nextLegData = tripState.selectedRoute?.legs[nextLegIndex];
+  const isLastLeg = !nextLegData;
   const passengerCount = tripState.passengerCount || 1;
 
   // Generate stops based on current leg
@@ -80,28 +84,44 @@ const TrackingBus = () => {
     setTransitEta(12);
     setTransitRideStarted(false);
 
-    if (isLastLeg) {
+    if (!nextLegData) {
       navigate('/trip-complete');
-    } else if (nextLegData) {
-      const nextMode = nextLegData.mode;
-      if (nextMode === 'walk') {
+    } else {
+      const { mode } = nextLegData;
+      if (mode === 'walk') {
         navigate('/tracking-walk');
-      } else if (nextMode === 'bus') {
+      } else if (mode === 'bus') {
         navigate('/tracking-bus');
-      } else if (['metro', 'suburban-train'].includes(nextMode)) {
+      } else if (['metro', 'suburban-train'].includes(mode)) {
         navigate('/tracking-leg2');
       } else {
         // Ride modes
         navigate('/tracking-leg3');
       }
-    } else {
-      navigate('/trip-complete');
     }
   };
 
+  const totalLegs = tripState.selectedRoute?.legs.length || 3;
+  const startPos = { lat: tripState.pickup?.lat ?? 28.6315, lng: tripState.pickup?.lng ?? 77.2167 };
+  const endPos = { lat: tripState.destination?.lat ?? 28.6139, lng: tripState.destination?.lng ?? 77.2090 };
+  
+  const pickupCoords = {
+    lat: startPos.lat + (endPos.lat - startPos.lat) * (currentLegIndex / totalLegs),
+    lng: startPos.lng + (endPos.lng - startPos.lng) * (currentLegIndex / totalLegs)
+  };
+  
+  const destCoords = {
+    lat: startPos.lat + (endPos.lat - startPos.lat) * ((currentLegIndex + 1) / totalLegs),
+    lng: startPos.lng + (endPos.lng - startPos.lng) * ((currentLegIndex + 1) / totalLegs)
+  };
+  
   const getBusName = () => {
     return `Bus ${currentLeg?.lineInfo || '153A'}`;
   };
+
+  const driverProgress = status === 'riding' ? progress / 100 : 0;
+  const driverLat = pickupCoords.lat + (destCoords.lat - pickupCoords.lat) * driverProgress;
+  const driverLng = pickupCoords.lng + (destCoords.lng - pickupCoords.lng) * driverProgress;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -130,16 +150,42 @@ const TrackingBus = () => {
         <AnimatedProgressBar progress={status === 'ready' ? 0 : progress} mode="bus" />
       </div>
 
-      {/* Map Area */}
-      <div className="relative h-[26vh] bg-secondary">
-        <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
-          🚌
-        </div>
-        <div className="absolute top-3 left-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+      {/* Map Area - Transitioning between 15vh and 45vh (default) */}
+      <div 
+        className={`relative transition-all duration-500 ease-in-out bg-secondary flex-shrink-0 ${
+          isMapExpanded ? "h-[45vh]" : "h-[15vh]"
+        }`}
+      >
+        <GoogleMapView
+          pickup={pickupCoords}
+          destination={destCoords}
+          showRoute={true}
+          driverLocation={status === 'riding' ? { lat: driverLat, lng: driverLng } : null}
+          driverIcon="🚌"
+          height="100%"
+          interactive={isMapExpanded}
+        >
+          {/* Map Expand/Minimize Button */}
+          <div className="absolute top-4 right-4 z-20">
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`rounded-full shadow-lg font-semibold transition-colors ${
+                isMapExpanded ? "bg-black text-white" : "bg-white text-black hover:bg-white/90"
+              }`}
+              onClick={() => setIsMapExpanded(!isMapExpanded)}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              {isMapExpanded ? "Minimize" : "Map"}
+            </Button>
+          </div>
+
+          <div className="absolute top-3 left-3 z-10">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </GoogleMapView>
       </div>
 
       {/* Bottom Card */}

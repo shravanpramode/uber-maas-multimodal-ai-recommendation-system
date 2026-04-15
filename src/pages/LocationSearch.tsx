@@ -13,16 +13,16 @@ const LocationSearch = () => {
   const [activeInput, setActiveInput] = useState<"pickup" | "destination" | null>(null);
 
   const allPlaces = [
-    { name: "Connaught Place", address: "Connaught Place, New Delhi, Delhi", distance: "0 km", icon: "clock" },
-    { name: "Gurgaon Cyber Hub", address: "DLF Cyber Hub, DLF City Phase II, Gurgaon", distance: "28 km", icon: "clock" },
-    { name: "Sarojini Nagar Market", address: "Sarojini Nagar, New Delhi, Delhi", distance: "8.7 km", icon: "clock" },
-    { name: "DLF Cyber Park - The Auditorium", address: "DLF Cyber Park, Phase II, Udyog Vihar, City:, Gur...", distance: "26 km", icon: "clock" },
-    { name: "Dwarka Sector 10 Park", address: "H3P5+P7C, Sector 10 Dwarka, Dwarka, New Del...", distance: "22 km", icon: "clock" },
-    { name: "India Gate", address: "Rajpath, India Gate, New Delhi, Delhi", distance: "3.5 km", icon: "clock" },
-    { name: "Hauz Khas Village", address: "Hauz Khas, New Delhi, Delhi", distance: "12 km", icon: "clock" },
-    { name: "Nehru Place", address: "Nehru Place, New Delhi, Delhi", distance: "9 km", icon: "clock" },
-    { name: "Rajiv Chowk Metro Station", address: "Connaught Place, New Delhi, Delhi", distance: "0.5 km", icon: "clock" },
-    { name: "The Lalit New Delhi", address: "Fire Brigade Lane, Barakhamba, New Delhi, Delhi", distance: "1.5 km", icon: "pin" },
+    { name: "Connaught Place", address: "Connaught Place, New Delhi, Delhi", distance: "0 km", icon: "clock", lat: 28.6328, lng: 77.2197 },
+    { name: "Gurgaon Cyber Hub", address: "DLF Cyber Hub, DLF City Phase II, Gurgaon", distance: "28 km", icon: "clock", lat: 28.4950, lng: 77.0886 },
+    { name: "Sarojini Nagar Market", address: "Sarojini Nagar, New Delhi, Delhi", distance: "8.7 km", icon: "clock", lat: 28.5776, lng: 77.1961 },
+    { name: "DLF Cyber Park - The Auditorium", address: "DLF Cyber Park, Phase II, Udyog Vihar, City:, Gur...", distance: "26 km", icon: "clock", lat: 28.5020, lng: 77.0872 },
+    { name: "Dwarka Sector 10 Park", address: "H3P5+P7C, Sector 10 Dwarka, Dwarka, New Del...", distance: "22 km", icon: "clock", lat: 28.5818, lng: 77.0583 },
+    { name: "India Gate", address: "Rajpath, India Gate, New Delhi, Delhi", distance: "3.5 km", icon: "clock", lat: 28.6129, lng: 77.2295 },
+    { name: "Hauz Khas Village", address: "Hauz Khas, New Delhi, Delhi", distance: "12 km", icon: "clock", lat: 28.5535, lng: 77.1956 },
+    { name: "Nehru Place", address: "Nehru Place, New Delhi, Delhi", distance: "9 km", icon: "clock", lat: 28.5501, lng: 77.2513 },
+    { name: "Rajiv Chowk Metro Station", address: "Connaught Place, New Delhi, Delhi", distance: "0.5 km", icon: "clock", lat: 28.6331, lng: 77.2197 },
+    { name: "The Lalit New Delhi", address: "Fire Brigade Lane, Barakhamba, New Delhi, Delhi", distance: "1.5 km", icon: "pin", lat: 28.6315, lng: 77.2273 },
   ];
 
   // Filter places based on active input and existing selection
@@ -36,8 +36,8 @@ const LocationSearch = () => {
       setPickup({
         name: place.name,
         address: place.address,
-        lat: 13.0827,
-        lng: 80.2707,
+        lat: place.lat,
+        lng: place.lng,
       });
       // Auto-focus destination after pickup is selected
       setActiveInput("destination");
@@ -46,8 +46,8 @@ const LocationSearch = () => {
       setDestination({
         name: place.name,
         address: place.address,
-        lat: 13.0827,
-        lng: 80.2707,
+        lat: place.lat,
+        lng: place.lng,
       });
       
       // Navigate if both are filled

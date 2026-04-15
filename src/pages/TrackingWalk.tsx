@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
-
+import GoogleMapView from "@/components/Map/GoogleMapView";
 type WalkStatus = 'ready' | 'walking' | 'arrived';
 
 const TrackingWalk = () => {
@@ -12,21 +12,21 @@ const TrackingWalk = () => {
   const { completeTrip, tripState, nextLeg, setTransitProgress, setTransitEta, setTransitRideStarted } = useTrip();
   const [status, setStatus] = useState<WalkStatus>('ready');
   const [progress, setProgress] = useState(0);
+  const [isMapExpanded, setIsMapExpanded] = useState(true);
   
-  const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg];
-  const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
-  const isLastLeg = !tripState.selectedRoute || tripState.currentLeg >= tripState.selectedRoute.legs.length - 1;
-  const isNextLegBus = nextLegData?.mode === 'bus';
-  const isNextLegMetroTrain = nextLegData && ['metro', 'suburban-train'].includes(nextLegData.mode);
-  const isNextLegRide = nextLegData && ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLegData.mode);
+  const currentLegIndex = tripState.currentLeg;
+  const currentLeg = tripState.selectedRoute?.legs[currentLegIndex];
+  const nextLegIndex = currentLegIndex + 1;
+  const nextLegData = tripState.selectedRoute?.legs[nextLegIndex];
+  const isLastLeg = !nextLegData;
 
   const walkDuration = currentLeg?.duration || 6;
   const walkDistance = currentLeg?.distance || 400;
+  const destinationName = currentLeg?.to || tripState.destination?.name || "Destination";
 
   // Walking progress simulation
   useEffect(() => {
     if (status === 'walking') {
-      const totalTimeMs = walkDuration * 1000; // Simulated as 1 second per minute
       const interval = setInterval(() => {
         setProgress(prev => {
           const newProgress = prev + (100 / (walkDuration * 2));
@@ -53,18 +53,21 @@ const TrackingWalk = () => {
     setTransitEta(12);
     setTransitRideStarted(false);
 
-    if (isLastLeg) {
+    if (!nextLegData) {
       completeTrip();
       navigate('/trip-complete');
-    } else if (isNextLegBus) {
-      navigate('/tracking-bus');
-    } else if (isNextLegMetroTrain) {
-      navigate('/tracking-leg2');
-    } else if (isNextLegRide) {
-      navigate('/tracking-leg3');
     } else {
-      // Another walk leg (unlikely but handle it)
-      navigate('/tracking-walk');
+      const { mode } = nextLegData;
+      if (mode === 'bus') {
+        navigate('/tracking-bus');
+      } else if (['metro', 'suburban-train'].includes(mode)) {
+        navigate('/tracking-leg2');
+      } else if (['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(mode)) {
+        navigate('/tracking-leg3');
+      } else {
+        // Another walk leg
+        navigate('/tracking-walk');
+      }
     }
   };
 
@@ -82,6 +85,24 @@ const TrackingWalk = () => {
       case 'arrived': return "You've arrived!";
     }
   };
+
+  const totalLegs = tripState.selectedRoute?.legs.length || 3;
+  const startPos = { lat: tripState.pickup?.lat ?? 28.6315, lng: tripState.pickup?.lng ?? 77.2167 };
+  const endPos = { lat: tripState.destination?.lat ?? 28.6139, lng: tripState.destination?.lng ?? 77.2090 };
+  
+  const pickupCoords = {
+    lat: startPos.lat + (endPos.lat - startPos.lat) * (currentLegIndex / totalLegs),
+    lng: startPos.lng + (endPos.lng - startPos.lng) * (currentLegIndex / totalLegs)
+  };
+  
+  const destCoords = {
+    lat: startPos.lat + (endPos.lat - startPos.lat) * ((currentLegIndex + 1) / totalLegs),
+    lng: startPos.lng + (endPos.lng - startPos.lng) * ((currentLegIndex + 1) / totalLegs)
+  };
+
+  const walkerProgress = status === 'walking' ? progress / 100 : 0;
+  const walkerLat = pickupCoords.lat + (destCoords.lat - pickupCoords.lat) * walkerProgress;
+  const walkerLng = pickupCoords.lng + (destCoords.lng - pickupCoords.lng) * walkerProgress;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -104,39 +125,48 @@ const TrackingWalk = () => {
         <Progress value={progress} className="h-1.5 bg-background/20" />
       </div>
 
-      {/* Map Area */}
-      <div className="relative h-[35vh] bg-secondary">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-6xl opacity-20">🚶</div>
-        </div>
-        <div className="absolute top-3 left-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-        
-        {/* Walking path visualization */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-card/95 backdrop-blur rounded-xl p-3 shadow-lg">
-            <div className="flex items-start gap-3">
-              <div className="flex flex-col items-center">
-                <div className="w-3 h-3 bg-primary rounded-full" />
-                <div className="w-0.5 h-8 bg-primary/30 my-1" />
-                <div className="w-3 h-3 bg-foreground rounded-sm" />
-              </div>
-              <div className="flex-1">
-                <div className="mb-3">
-                  <p className="text-xs text-foreground/60">From</p>
-                  <p className="font-medium text-sm">{currentLeg?.from || "Current Location"}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-foreground/60">To</p>
-                  <p className="font-medium text-sm">{currentLeg?.to || "Destination"}</p>
-                </div>
-              </div>
-            </div>
+      {/* Map Area - Transitioning between 15vh and 45vh (default) */}
+      <div 
+        className={`relative transition-all duration-500 ease-in-out bg-secondary flex-shrink-0 ${
+          isMapExpanded ? "h-[45vh]" : "h-[15vh]"
+        }`}
+      >
+        <GoogleMapView
+          pickup={pickupCoords}
+          destination={destCoords}
+          showRoute={true}
+          driverLocation={status === 'walking' ? { lat: walkerLat, lng: walkerLng } : null}
+          driverIcon="🚶"
+          height="100%"
+          interactive={isMapExpanded}
+        >
+          {/* Map Expand/Minimize Button */}
+          <div className="absolute top-4 right-4 z-20">
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`rounded-full shadow-lg font-semibold transition-colors ${
+                isMapExpanded ? "bg-black text-white" : "bg-white text-black hover:bg-white/90"
+              }`}
+              onClick={() => setIsMapExpanded(!isMapExpanded)}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              {isMapExpanded ? "Minimize" : "Map"}
+            </Button>
           </div>
-        </div>
+
+          <div className="absolute top-3 left-3 z-10">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 bg-card px-3 py-1 rounded-lg shadow-lg z-10 transition-all duration-500 ${
+            isMapExpanded ? "opacity-100" : "opacity-0"
+          }`}>
+            <p className="text-xs font-medium">{currentLeg?.to || "Destination"}</p>
+          </div>
+        </GoogleMapView>
       </div>
 
       {/* Bottom Card */}
@@ -148,7 +178,7 @@ const TrackingWalk = () => {
             Leg {(tripState.currentLeg || 0) + 1} of {tripState.selectedRoute?.legs.length || 1} • Walking
           </p>
           <h2 className={`text-xl font-bold mb-4 ${status === 'arrived' ? 'text-green-600' : ''}`}>
-            {status === 'arrived' ? `Arrived at ${currentLeg?.to}` : `Walk to ${currentLeg?.to}`}
+            {status === 'arrived' ? `Arrived at ${destinationName}` : `Walk to ${destinationName}`}
           </h2>
 
           {/* Walk Details */}
@@ -173,13 +203,15 @@ const TrackingWalk = () => {
               <p className="text-xs font-semibold text-foreground/60 mb-1">NEXT</p>
               <div className="flex items-center gap-2">
                 <span className="text-lg">
-                  {isNextLegBus ? '🚌' : isNextLegMetroTrain ? '🚇' : isNextLegRide ? '🚗' : '🚶'}
+                  {nextLegData.mode === 'bus' ? '🚌' : 
+                   ['metro', 'suburban-train'].includes(nextLegData.mode) ? '🚇' : 
+                   ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLegData.mode) ? '🚗' : '🚶'}
                 </span>
                 <div>
                   <p className="font-medium text-sm">
-                    {isNextLegBus ? `Bus from ${nextLegData.from}` :
-                     isNextLegMetroTrain ? `${nextLegData.mode === 'metro' ? 'Metro' : 'Train'} from ${nextLegData.from}` : 
-                     isNextLegRide ? `${nextLegData.mode === 'auto' ? 'Auto' : nextLegData.mode === 'bike' ? 'Bike' : 'Cab'} to ${nextLegData.to}` :
+                    {nextLegData.mode === 'bus' ? `Bus from ${nextLegData.from}` :
+                     ['metro', 'suburban-train'].includes(nextLegData.mode) ? `${nextLegData.mode === 'metro' ? 'Metro' : 'Train'} from ${nextLegData.from}` : 
+                     ['auto', 'bike', 'uber-go', 'go-sedan', 'uber-xl'].includes(nextLegData.mode) ? `${nextLegData.mode === 'auto' ? 'Auto' : nextLegData.mode === 'bike' ? 'Bike' : 'Cab'} to ${nextLegData.to}` :
                      `Walk to ${nextLegData.to}`}
                   </p>
                   <p className="text-xs text-foreground/60">{nextLegData.duration} mins</p>

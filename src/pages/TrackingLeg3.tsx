@@ -1,9 +1,10 @@
-import { X, Phone, MessageCircle, MoreHorizontal, User, Play, Bike, Car } from "lucide-react";
+import { X, Phone, MessageCircle, MoreHorizontal, User, Play, Bike, Car, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
 import { useEffect, useState } from "react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
+import GoogleMapView from "@/components/Map/GoogleMapView";
 
 type TrackingStatus = 'pickup_countdown' | 'ride_here' | 'in_transit' | 'arrived';
 
@@ -78,14 +79,35 @@ const TrackingLeg3 = () => {
   const [status, setStatus] = useState<TrackingStatus>('pickup_countdown');
   const [countdown, setCountdown] = useState(5);
   const [progress, setProgress] = useState(0);
+  const [isMapExpanded, setIsMapExpanded] = useState(true);
   const totalTime = 8;
 
-  const currentLeg = tripState.selectedRoute?.legs[tripState.currentLeg] || tripState.selectedRoute?.legs[2];
-  const nextLegData = tripState.selectedRoute?.legs[tripState.currentLeg + 1];
-  const isLastLeg = !tripState.selectedRoute || tripState.currentLeg >= tripState.selectedRoute.legs.length - 1;
-  const isNextLegBus = nextLegData?.mode === 'bus';
-  const isNextLegMetroTrain = nextLegData && ['metro', 'suburban-train'].includes(nextLegData.mode);
-  const isNextLegWalk = nextLegData?.mode === 'walk';
+  const currentLegIndex = tripState.currentLeg;
+  const currentLeg = tripState.selectedRoute?.legs[currentLegIndex];
+  const nextLegIndex = currentLegIndex + 1;
+  const nextLegData = tripState.selectedRoute?.legs[nextLegIndex];
+  const isLastLeg = !nextLegData;
+
+  // Logic to determine where to go next
+  const navigateToNextLeg = () => {
+    if (!nextLegData) {
+      completeTrip();
+      navigate('/trip-complete');
+      return;
+    }
+
+    const { mode } = nextLegData;
+    if (mode === 'bus') {
+      navigate('/tracking-bus');
+    } else if (['metro', 'suburban-train'].includes(mode)) {
+      navigate('/tracking-leg2');
+    } else if (mode === 'walk') {
+      navigate('/tracking-walk');
+    } else {
+      // For auto, bike, uber-go, etc.
+      navigate('/tracking-leg3');
+    }
+  };
 
   // Get mode-specific info
   const modeInfo = getModeInfo(currentLeg?.mode || 'auto');
@@ -123,35 +145,20 @@ const TrackingLeg3 = () => {
       }, 500);
       return () => clearInterval(interval);
     }
-  }, [status]);
+  }, [status, totalTime]);
 
   const handleStartTrip = () => {
     setStatus('in_transit');
   };
 
-  const handleDriverClosesRide = () => {
-    setTimeout(() => {
-      completeTrip();
-      navigate('/trip-complete');
-    }, 2000);
-  };
-
-  const handleContinueToNextLeg = () => {
+  const handleContinue = () => {
     nextLeg();
     // Reset transit state for next leg
     setTransitProgress(0);
     setTransitEta(12);
     setTransitRideStarted(false);
     
-    if (isNextLegBus) {
-      navigate('/tracking-bus');
-    } else if (isNextLegMetroTrain) {
-      navigate('/tracking-leg2');
-    } else if (isNextLegWalk) {
-      navigate('/tracking-walk');
-    } else {
-      navigate('/tracking-leg3');
-    }
+    navigateToNextLeg();
   };
 
   const pin = ['2', '5', '6', '1'];
@@ -165,6 +172,23 @@ const TrackingLeg3 = () => {
       case 'arrived': return `You've arrived at ${currentLeg?.to || 'destination'}`;
     }
   };
+
+  const totalLegs = tripState.selectedRoute?.legs.length || 3;
+  const startPos = { lat: tripState.pickup?.lat ?? 28.6315, lng: tripState.pickup?.lng ?? 77.2167 };
+  const endPos = { lat: tripState.destination?.lat ?? 28.6139, lng: tripState.destination?.lng ?? 77.2090 };
+  
+  const pickupCoords = {
+    lat: startPos.lat + (endPos.lat - startPos.lat) * (currentLegIndex / totalLegs),
+    lng: startPos.lng + (endPos.lng - startPos.lng) * (currentLegIndex / totalLegs)
+  };
+  
+  const destinationCoords = {
+    lat: startPos.lat + (endPos.lat - startPos.lat) * ((currentLegIndex + 1) / totalLegs),
+    lng: startPos.lng + (endPos.lng - startPos.lng) * ((currentLegIndex + 1) / totalLegs)
+  };
+  const driverProgress = status === 'in_transit' ? progress / 100 : 0;
+  const driverLat = pickupCoords.lat + (destinationCoords.lat - pickupCoords.lat) * driverProgress;
+  const driverLng = pickupCoords.lng + (destinationCoords.lng - pickupCoords.lng) * driverProgress;
 
   // Use currentLeg data for pickup/drop, not final destination for intermediate legs
   const pickupLocation = currentLeg?.from || tripState.pickup?.name || "Pickup";
@@ -189,19 +213,48 @@ const TrackingLeg3 = () => {
         </div>
       </div>
 
-      {/* Map Area */}
-      <div className="relative h-[30vh] bg-secondary">
-        <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
-          🗺️
-        </div>
-        <div className="absolute top-3 left-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-card px-3 py-1 rounded-lg shadow-lg">
-          <p className="text-xs font-medium">{dropLocation}</p>
-        </div>
+      {/* Map Area - Transitioning between 15vh and 45vh (default) */}
+      <div 
+        className={`relative transition-all duration-500 ease-in-out bg-secondary flex-shrink-0 ${
+          isMapExpanded ? "h-[45vh]" : "h-[15vh]"
+        }`}
+      >
+        <GoogleMapView
+          pickup={pickupCoords}
+          destination={destinationCoords}
+          showRoute={true}
+          driverLocation={status === 'in_transit' ? { lat: driverLat, lng: driverLng } : null}
+          driverIcon={currentLeg?.mode === 'bike' ? '🏍️' : currentLeg?.mode === 'auto' ? '🛺' : '🚗'}
+          height="100%"
+          interactive={isMapExpanded}
+        >
+          {/* Map Expand/Minimize Button */}
+          <div className="absolute top-4 right-4 z-20">
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`rounded-full shadow-lg font-semibold transition-colors ${
+                isMapExpanded ? "bg-black text-white" : "bg-white text-black hover:bg-white/90"
+              }`}
+              onClick={() => setIsMapExpanded(!isMapExpanded)}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              {isMapExpanded ? "Minimize" : "Map"}
+            </Button>
+          </div>
+
+          <div className="absolute top-3 left-3 z-10">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="bg-card/90 backdrop-blur rounded-full h-9 w-9">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 bg-card px-3 py-1 rounded-lg shadow-lg z-10 transition-all duration-500 ${
+            isMapExpanded ? "opacity-100" : "opacity-0"
+          }`}>
+            <p className="text-xs font-medium">{dropLocation}</p>
+          </div>
+        </GoogleMapView>
       </div>
 
       {/* Bottom Card */}
@@ -298,7 +351,7 @@ const TrackingLeg3 = () => {
           )}
           {status === 'arrived' && (
             <Button 
-              onClick={isLastLeg ? handleDriverClosesRide : handleContinueToNextLeg}
+              onClick={handleContinue}
               className="w-full h-11 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90"
             >
               {isLastLeg ? 'Complete Trip' : "Continue to Next Leg →"}

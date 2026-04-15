@@ -2,16 +2,25 @@ import { ArrowLeft, Users, MapPin, Calendar, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import MultimodalIcon from "@/components/MultimodalIcon";
 import { toast } from "@/hooks/use-toast";
 import { getRideIcon } from "@/components/RideIcons";
+import GoogleMapView from "@/components/Map/GoogleMapView";
+import { useEnvironmentalFactors } from "@/hooks/useEnvironmentalFactors";
+import { generateRecommendations, type RouteRecommendation } from "@/lib/recommendationEngine";
 
 const ChooseRide = () => {
   const navigate = useNavigate();
   const { selectRoute, tripState } = useTrip();
   const [selectedRide, setSelectedRide] = useState<string | null>(null);
   const [selectedRideName, setSelectedRideName] = useState<string | null>(null);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
+
+  // Environmental context for smart recommendations
+  const pickupLat = tripState.pickup?.lat ?? 28.6315;
+  const pickupLng = tripState.pickup?.lng ?? 77.2167;
+  const { airQuality, weather } = useEnvironmentalFactors(pickupLat, pickupLng);
 
   const rides = [
     {
@@ -244,47 +253,71 @@ const ChooseRide = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col font-uber overflow-hidden">
-      {/* Map Area - 12% with pickup inside */}
-      <div className="relative h-[12vh] bg-secondary flex-shrink-0">
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-          <Button
-            variant="secondary"
-            size="icon"
-            className="rounded-full shadow-lg bg-white hover:bg-white/90"
-            onClick={() => navigate("/location-search")}
-          >
-            <ArrowLeft className="w-5 h-5 text-black" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="rounded-full shadow-lg font-semibold bg-white hover:bg-white/90 text-black"
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            Map
-          </Button>
-        </div>
+      {/* Map Area - Transitioning between 12vh and 65vh */}
+      <div 
+        className={`relative transition-all duration-500 ease-in-out bg-secondary flex-shrink-0 ${
+          isMapExpanded ? "h-[65vh]" : "h-[12vh]"
+        }`}
+      >
+        <GoogleMapView
+          pickup={tripState.pickup ? { lat: tripState.pickup.lat, lng: tripState.pickup.lng } : { lat: 28.6315, lng: 77.2167 }}
+          destination={tripState.destination ? { lat: tripState.destination.lat, lng: tripState.destination.lng } : null}
+          showRoute={!!tripState.destination}
+          height="100%"
+          interactive={isMapExpanded}
+        >
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="rounded-full shadow-lg bg-white hover:bg-white/90"
+              onClick={() => navigate("/location-search")}
+            >
+              <ArrowLeft className="w-5 h-5 text-black" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`rounded-full shadow-lg font-semibold transition-colors ${
+                isMapExpanded ? "bg-black text-white" : "bg-white text-black hover:bg-white/90"
+              }`}
+              onClick={() => setIsMapExpanded(!isMapExpanded)}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              {isMapExpanded ? "Minimize" : "Map"}
+            </Button>
+          </div>
 
-        {/* Map placeholder */}
-        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
-          🗺️
-        </div>
-
-        {/* Pickup Label - Inside Map at bottom */}
-        <div className="absolute bottom-2 left-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium">
-          {tripState.pickup?.name || "Connaught Place"}
-        </div>
+          {/* Pickup Label - Inside Map at bottom */}
+          <div className="absolute bottom-2 left-4 bg-white px-3 py-1.5 rounded-full shadow-md text-sm font-medium z-10">
+            {tripState.pickup?.name || "Connaught Place"}
+          </div>
+        </GoogleMapView>
       </div>
 
       {/* Ride Options Section - 70% scrollable */}
       <div className="flex-1 overflow-y-auto bg-card px-4 py-4">
         <h2 className="text-xl font-bold mb-4">Choose a ride</h2>
 
-            {/* Multimodal - Best Value */}
+            {/* Multimodal - Best Value with Smart Tags */}
             <div className="mb-4">
               <h3 className="text-sm font-bold mb-3 text-muted-foreground">
                 Rides we think you'll like
               </h3>
+
+              {/* Smart Environment Alert */}
+              {weather?.isRaining && (
+                <div className="flex items-center gap-2 px-3 py-2 mb-3 bg-sky-50 border border-sky-200 rounded-xl text-xs">
+                  <span className="text-base">🌧️</span>
+                  <span className="text-sky-800 font-medium">It's raining — enclosed rides are recommended</span>
+                </div>
+              )}
+              {airQuality && airQuality.aqi > 150 && (
+                <div className="flex items-center gap-2 px-3 py-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl text-xs">
+                  <span className="text-base">🫁</span>
+                  <span className="text-amber-800 font-medium">Air quality is {airQuality.category} — metro reduces pollution exposure</span>
+                </div>
+              )}
 
               <button
                 onClick={handleMultimodalClick}
@@ -298,11 +331,21 @@ const ChooseRide = () => {
                 <div className="flex items-center gap-3">
                   <MultimodalIcon className="w-12 h-12 text-black" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="font-bold text-base">Multimodal</h3>
                       <div className="bg-success/10 text-success text-[10px] font-bold px-2 py-0.5 rounded-full">
                         BEST VALUE
                       </div>
+                      {new Date().getHours() >= 8 && new Date().getHours() <= 10 && (
+                        <div className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          🚇 Beat the Traffic
+                        </div>
+                      )}
+                      {airQuality && airQuality.aqi > 150 && (
+                        <div className="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          🫁 Healthier
+                        </div>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">
                       03:28 · {multimodalRoute.totalDuration} min total

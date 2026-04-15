@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, MoreVertical, CreditCard } from "lucide-react";
+import { ChevronDown, MoreVertical, CreditCard, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTrip } from "@/contexts/TripContext";
+import GoogleMapView from "@/components/Map/GoogleMapView";
 
 const TripSearch = () => {
   const navigate = useNavigate();
   const { tripState } = useTrip();
   const [searchProgress, setSearchProgress] = useState(0);
   const [tip, setTip] = useState(0);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
 
   useEffect(() => {
     // Simulate search progress
@@ -53,35 +55,53 @@ const TripSearch = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Map Section */}
-      <div className="relative h-[50vh] bg-secondary">
-        <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
-          🗺️
-        </div>
-        
-        {/* Collapse Button */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute top-4 right-4 bg-card/90 backdrop-blur rounded-full"
+      {/* Map Section - Transitioning between 20vh and 65vh */}
+      <div 
+        className={`relative transition-all duration-500 ease-in-out bg-secondary flex-shrink-0 ${
+          isMapExpanded ? "h-[65vh]" : "h-[20vh]"
+        }`}
+      >
+        <GoogleMapView
+          pickup={tripState.pickup ? { lat: tripState.pickup.lat, lng: tripState.pickup.lng } : { lat: 28.6315, lng: 77.2167 }}
+          destination={tripState.destination ? { lat: tripState.destination.lat, lng: tripState.destination.lng } : null}
+          showRoute={!!tripState.destination}
+          height="100%"
+          interactive={isMapExpanded}
         >
-          <ChevronDown className="w-5 h-5" />
-        </Button>
+          {/* Map Expand/Minimize Button */}
+          <Button 
+            variant="secondary"
+            size="sm"
+            className={`absolute top-4 right-4 rounded-full shadow-lg font-semibold transition-colors z-20 ${
+              isMapExpanded ? "bg-black text-white" : "bg-white text-black hover:bg-white/90"
+            }`}
+            onClick={() => setIsMapExpanded(!isMapExpanded)}
+          >
+            <MapPin className="w-4 h-4 mr-2" />
+            {isMapExpanded ? "Minimize" : "Map"}
+          </Button>
 
-        {/* Route Labels */}
-        <div className="absolute top-20 left-4 right-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-foreground" />
-            <span className="text-sm font-medium">{tripState.pickup?.name}</span>
+          {/* Route Labels - Only show when expanded or slightly adjusted for minimized */}
+          <div className={`absolute left-4 right-4 space-y-2 z-10 transition-all duration-500 ${
+            isMapExpanded ? "top-20" : "top-12"
+          }`}>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-foreground" />
+              <span className="text-sm font-medium bg-white/80 backdrop-blur px-2 py-0.5 rounded">{tripState.pickup?.name}</span>
+            </div>
+            {isMapExpanded && (
+              <>
+                <div className="flex items-center gap-2 ml-1">
+                  <div className="w-0.5 h-8 bg-border" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 border-2 border-foreground bg-background rounded-sm" />
+                  <span className="text-sm font-medium bg-white/80 backdrop-blur px-2 py-0.5 rounded">{tripState.destination?.name}</span>
+                </div>
+              </>
+            )}
           </div>
-          <div className="flex items-center gap-2 ml-1">
-            <div className="w-0.5 h-8 bg-border" />
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 border-2 border-foreground bg-background rounded-sm" />
-            <span className="text-sm font-medium">{tripState.destination?.name}</span>
-          </div>
-        </div>
+        </GoogleMapView>
       </div>
 
       {/* Bottom Card */}
