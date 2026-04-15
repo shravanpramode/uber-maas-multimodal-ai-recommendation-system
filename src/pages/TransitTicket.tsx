@@ -61,7 +61,11 @@ const TransitTicket = () => {
     }
     
     if (transitExitMode) {
-      // Scan & Exit mode - call nextLeg() NOW after exiting
+      // Scan & Exit mode - calculate next leg target before updating state
+      const targetLegIndex = tripState.currentLeg + 1;
+      const nextLegAfterCurrent = tripState.selectedRoute?.legs[targetLegIndex];
+      
+      // Update state
       setTransitExitMode(false);
       nextLeg();
       
@@ -70,21 +74,13 @@ const TransitTicket = () => {
       setTransitEta(12);
       setTransitRideStarted(false);
       
-      // Check what comes AFTER the leg we just completed
-      const nextLegIndex = tripState.currentLeg + 1;
-      const nextLegAfterCurrent = tripState.selectedRoute?.legs[nextLegIndex];
-      const hasMoreLegsAfter = tripState.selectedRoute && nextLegIndex < tripState.selectedRoute.legs.length;
-      
-      if (hasMoreLegsAfter && nextLegAfterCurrent) {
-        const isNextBus = nextLegAfterCurrent.mode === 'bus';
-        const isNextMetroTrain = ['metro', 'suburban-train'].includes(nextLegAfterCurrent.mode);
-        const isNextWalk = nextLegAfterCurrent.mode === 'walk';
-        
-        if (isNextBus) {
+      if (nextLegAfterCurrent) {
+        const { mode } = nextLegAfterCurrent;
+        if (mode === 'bus') {
           navigate('/tracking-bus');
-        } else if (isNextMetroTrain) {
+        } else if (['metro', 'suburban-train'].includes(mode)) {
           navigate('/tracking-leg2');
-        } else if (isNextWalk) {
+        } else if (mode === 'walk') {
           navigate('/tracking-walk');
         } else {
           // Ride leg (auto, bike, uber, etc.)

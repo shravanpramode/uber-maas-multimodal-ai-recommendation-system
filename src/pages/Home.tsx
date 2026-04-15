@@ -1,13 +1,16 @@
-import { Search, Calendar, Car, Bike, Package, Train, MapPin, Home as HomeIcon, User } from "lucide-react";
+import { Search, Calendar, Car, Bike, Package, Train, MapPin, Home as HomeIcon, User, Wind } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useEnvironmentalFactors } from "@/hooks/useEnvironmentalFactors";
 
 const Home = () => {
   const navigate = useNavigate();
   const [showOutOfScope, setShowOutOfScope] = useState(false);
+  // Connaught Place, New Delhi coordinates
+  const { airQuality, weather, loading: envLoading } = useEnvironmentalFactors(28.6315, 77.2167);
   const handleOutOfScope = () => {
     toast({
       description: "Out of scope",
@@ -64,6 +67,36 @@ const Home = () => {
           <span className="text-xs">Later</span>
         </Button>
       </header>
+
+      {/* Smart Environmental Status Bar */}
+      {(weather || airQuality) && (
+        <div className="px-4 pt-2">
+          <div className="flex items-center gap-2 px-3 py-2 bg-secondary/60 rounded-xl text-sm">
+            {weather && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">{weather.icon}</span>
+                <span className="font-semibold">{weather.temperature}°C</span>
+                <span className="text-muted-foreground text-xs">{weather.condition}</span>
+              </div>
+            )}
+            {weather && airQuality && (
+              <div className="w-px h-4 bg-border mx-1" />
+            )}
+            {airQuality && (
+              <div className="flex items-center gap-1.5">
+                <Wind className="w-3.5 h-3.5" />
+                <span className="text-xs">AQI</span>
+                <span
+                  className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: airQuality.color + '30', color: airQuality.aqi > 100 ? '#B91C1C' : '#15803D' }}
+                >
+                  {airQuality.aqi} · {airQuality.category}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Recent Location */}
       <div className="px-4 py-2">

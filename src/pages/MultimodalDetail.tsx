@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTrip } from "@/contexts/TripContext";
 import MultimodalIcon from "@/components/MultimodalIcon";
+import GoogleMapView from "@/components/Map/GoogleMapView";
 import { toast } from "@/hooks/use-toast";
 
 const MultimodalDetail = () => {
@@ -62,28 +63,32 @@ const MultimodalDetail = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col font-uber">
       {/* Map Area */}
-      <div className="relative h-[40vh] bg-secondary">
-        <div className="absolute top-3 left-3 z-10">
-          <Button
-            variant="secondary"
-            size="icon"
-            className="rounded-full shadow-lg bg-white hover:bg-white/90 h-9 w-9"
-            onClick={() => navigate("/choose-ride")}
-          >
-            <ArrowLeft className="w-4 h-4 text-black" />
-          </Button>
-        </div>
-
-        <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">
-          🗺️
-        </div>
-
-        <div className="absolute top-16 left-3 bg-white px-2 py-1 rounded-full shadow-md text-xs font-medium">
-          {tripState.pickup?.name || "Connaught Place"}
-        </div>
-        <div className="absolute bottom-16 right-3 bg-white px-2 py-1 rounded-full shadow-md text-xs font-medium">
-          {tripState.destination?.name || "DLF Cyber Park"}
-        </div>
+      <div className="relative h-[40vh] bg-secondary flex-shrink-0">
+        <GoogleMapView
+          pickup={tripState.pickup ? { lat: tripState.pickup.lat, lng: tripState.pickup.lng } : { lat: 28.6315, lng: 77.2167 }}
+          destination={tripState.destination ? { lat: tripState.destination.lat, lng: tripState.destination.lng } : null}
+          showRoute={!!tripState.destination}
+          height="100%"
+          interactive={true}
+        >
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="rounded-full shadow-lg bg-white hover:bg-white/90 h-9 w-9"
+              onClick={() => navigate("/choose-ride")}
+            >
+              <ArrowLeft className="w-4 h-4 text-black" />
+            </Button>
+          </div>
+          
+          <div className="absolute top-16 left-3 bg-white px-2 py-1 rounded-full shadow-md text-xs font-medium z-10">
+            {tripState.pickup?.name || "Connaught Place"}
+          </div>
+          <div className="absolute top-24 left-3 bg-white px-2 py-1 rounded-full shadow-md text-xs font-medium z-10">
+            {tripState.destination?.name || "DLF Cyber Park"}
+          </div>
+        </GoogleMapView>
       </div>
 
       {/* Details Card */}
